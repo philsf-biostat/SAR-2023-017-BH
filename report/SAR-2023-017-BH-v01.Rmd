@@ -1,0 +1,161 @@
+---
+title: "[title]"
+subtitle: 'DOCUMENT: SAR-2023-017-BH-v01'
+author: '**From:** Felipe Figueiredo **To:** ___'
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 6
+    keep_md: yes
+    number_sections: yes
+    toc: yes
+  pdf_document:
+    number_sections: yes
+    toc: yes
+  word_document:
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 6
+    reference_docx: misc/style_SAR_en.docx
+    toc: yes
+# toc-title: "Sumário"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+options(scipen = 999)
+library(pander)
+library(knitr)
+panderOptions('table.style', 'rmarkdown')
+panderOptions('table.split.table', 160)
+```
+
+---
+
+\newpage
+
+**[title]**
+
+**Document version**
+
+```{r history}
+Version <- c("01")
+Changes <- c("Initial version")
+history <- cbind(Version, Changes)
+colnames(history) <- c("Version", "Alterations")
+# pander(history, split.cells = 70)
+kable(history)
+```
+
+```{r results, include=FALSE}
+source("scripts/results.R", encoding = 'UTF-8')
+```
+
+---
+
+# Abbreviations
+
+# Context
+
+## Objectives
+
+<!-- ## Data reception and cleaning -->
+
+# Methods
+
+The data procedures, design and analysis methods used in this report are fully described in the annex document **SAP-2023-017-BH-v01**.
+
+<!-- ## Study parameters -->
+
+<!-- ### Study design -->
+
+<!-- ### Inclusion and exclusion criteria -->
+
+<!-- ### Exposures -->
+
+<!-- ### Outcomes -->
+
+<!-- ### Covariates -->
+
+<!-- ## Statistical analyses -->
+
+This analysis was performed using statistical software `R` version `r getRversion()`.
+
+# Results
+
+## Study population and follow up
+
+```{r tab_desc}
+tab_desc %>%
+  as_kable(              # only for markdown
+  # as_flex_table(       # only for DOCX
+  # ) %>%
+  # flextable::set_caption(
+    caption = "**Table 1** caption"
+  )
+```
+
+```{r fig1, fig.cap="**Figure 1** caption"}
+# ![Age](../figures/outcome.png)
+# knitr::include_graphics("../figures/outcome.png", error = FALSE)
+```
+
+## Inferential analysis
+
+```{r tab_inf}
+tab_inf %>%
+  as_kable(              # only for markdown
+  # as_flex_table(       # only for DOCX
+  # ) %>%
+  # flextable::set_caption(
+    caption = "**Table 2** caption"
+  )
+```
+
+# Observations and Limitations
+
+# Conclusions
+
+# References
+
+- **SAP-2023-017-BH-v01** -- Analytical Plan for [title]
+
+# Appendix
+
+## Exploratory data analysis
+
+N/A
+
+```{r A1, fig.cap="**Figure A1** Distribution of age in the study population."}
+# ![Age](../figures/distr_age.png)
+# knitr::include_graphics("../figures/distr_age.png", error = FALSE)
+```
+
+## Availability
+
+All documents from this consultation were included in the consultant's Portfolio.
+
+<!-- The client has requested that this analysis be kept confidential until a future date, determined by the client. -->
+<!-- All documents from this consultation are therefore not published online and only the title and year of the analysis will be included in the consultant's Portfolio. -->
+<!-- After the agreed date is reached, the documents will be released. -->
+
+<!-- The client has requested that this analysis be kept confidential. -->
+<!-- All documents from this consultation are therefore not published online and only the title and year of the analysis will be included in the consultant's Portfolio. -->
+
+The portfolio is available at:
+
+<https://philsf-biostat.github.io/SAR-2023-017-BH/>
+
+## Analytical dataset
+
+Table A1 shows the structure of the analytical dataset.
+
+```{r data}
+analytical_mockup %>%
+  pander(caption = "**Table A1** Analytical dataset structure")
+```
+
+Due to confidentiality the data-set used in this analysis cannot be shared online in the public version of this report.
