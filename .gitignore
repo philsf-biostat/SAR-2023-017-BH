@@ -281,3 +281,5 @@ flycheck_*.el
 # .html files (Rmarkdown report visualization)
 *.html
 
+# dataset is private and cannot be publicly versioned
+dataset/
