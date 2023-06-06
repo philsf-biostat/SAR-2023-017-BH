@@ -44,13 +44,17 @@ Statistical Analysis for PERSON (PLACE, yyyy)
 
 - [PDF][sar]
 
-<!-- ## Associated analyses -->
+## Associated analyses
 
-<!-- This analysis is part of a larger project and is supported by other analyses, linked below. -->
+This analysis is part of a larger project and is supported by other analyses, linked below.
 
-<!-- **[assoc_title]** -->
+**Effect of socioeconomic status in mortality rates after brain injury: retrospective cohort**
 
-<!-- <[assoc_link]> -->
+<https://philsf-biostat.github.io/SAR-2023-004-BH/>
+
+**Migration patterns in a cohort of individuals with brain injury in the US**
+
+<https://philsf-biostat.github.io/SAR-2023-016-BH/>
 
 <!-- --- -->
 
