@@ -1,16 +1,14 @@
-# [title]
+# Sensitivity of mortality rates to imputation of missing socioeconomic data after brain injury: cohort study
 
-Objective
+To assess the sensitivity of the association between mortality and socioeconomic status to the imputation of participant missing location.
 
-Statistical Analysis for PERSON (PLACE, yyyy)
-<!-- Technical Report for PERSON (PLACE, yyyy) -->
+Statistical Analysis for Brennan Hickson (US, 2023)
+<!-- Technical Report for Brennan Hickson (US, 2023) -->
 
 ## Analyses performed
 
 1. Descriptive analysis
 1. Inferential analysis
-1. Power analysis
-1. Missing data imputation
 1. Statistical models
 
 ## Documents
@@ -31,13 +29,17 @@ Statistical Analysis for PERSON (PLACE, yyyy)
 - [Online visualization][reportviz-v01]
 - [PDF][pdf-v01]
 
-<!-- ## Associated analyses -->
+## Associated analyses
 
-<!-- This analysis is part of a larger project and is supported by other analyses, linked below. -->
+This analysis is part of a larger project and is supported by other analyses, linked below.
 
-<!-- **[assoc_title]** -->
+**Effect of socioeconomic status in mortality rates after brain injury: retrospective cohort**
 
-<!-- <[assoc_link]> -->
+<https://philsf-biostat.github.io/SAR-2023-004-BH/>
+
+**Migration patterns in a cohort of individuals with brain injury in the US**
+
+<https://philsf-biostat.github.io/SAR-2023-016-BH/>
 
 ## Portfolio
 
