@@ -1,5 +1,5 @@
 ---
-title: '[title]'
+title: 'Sensitivity of mortality rates to imputation of missing socioeconomic data after brain injury: cohort study'
 date: ""
 permalink: /portfolio/SAR-2023-017/
 redirect_from:

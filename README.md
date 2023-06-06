@@ -1,4 +1,4 @@
-# [title]
+# Sensitivity of mortality rates to imputation of missing socioeconomic data after brain injury: cohort study
 
 Objective
 
