@@ -16,7 +16,7 @@ tags:
   - survival-analysis
 ---
 
-Objective
+To assess the sensitivity of the association between mortality and socioeconomic status to the imputation of participant missing location.
 
 Statistical Analysis for PERSON (PLACE, yyyy)
 <!-- Technical Report for PERSON (PLACE, yyyy) -->

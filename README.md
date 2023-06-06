@@ -1,6 +1,6 @@
 # Sensitivity of mortality rates to imputation of missing socioeconomic data after brain injury: cohort study
 
-Objective
+To assess the sensitivity of the association between mortality and socioeconomic status to the imputation of participant missing location.
 
 Statistical Analysis for Brennan Hickson (US, 2023)
 <!-- Technical Report for Brennan Hickson (US, 2023) -->
