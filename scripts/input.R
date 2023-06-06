@@ -76,6 +76,13 @@ data.raw <- data.raw %>%
     between(RehabDis, study_period[1], study_period[2]), # discharge date
   )
 
+# inclusion criteria: valid times
+data.raw <- data.raw %>%
+  filter(Time>0)
+
+# remove invalid observations (outcome at time 0 or below)
+Nobs_invalid <- data.raw %>% nrow()
+
 # data wrangling ----------------------------------------------------------
 
 data.raw <- data.raw %>%
@@ -119,11 +126,15 @@ data.raw <- data.raw %>%
                          Violence = c("Gunshot Wound", "Assaults With Blunt Instrument", "Other Violence"),
                          other_level = "Other",
                          ),
+    SCI = as.numeric(SCI == "Yes"),
+    PROBLEMUse = as.numeric(PROBLEMUse == "Yes"),
     # relevel variables
     SexF = fct_relevel(SexF, "Male"),
     RehabPay1 = fct_relevel(RehabPay1, "Private Insurance"),
     EDUCATION = fct_relevel(EDUCATION, "Greater Than High School"),
     RURALdc = fct_relevel(RURALdc, "Suburban"),
+    FIMMOTD4 = cut(FIMMOTD, breaks = c(0, quantile(FIMMOTD, probs = c(.25, .50, .75), na.rm = TRUE), 100), labels = c("Q1", "Q2", "Q3", "Q4")), #, labels = c("Q1", "Q2", "Q3", "Q4"), right = FALSE
+    FIMCOGD4 = cut(FIMCOGD, breaks = c(0, quantile(FIMCOGD, probs = c(.25, .50, .75), na.rm = TRUE), 100), labels = c("Q1", "Q2", "Q3", "Q4")),
   )
 
 # labels ------------------------------------------------------------------
@@ -135,6 +146,8 @@ data.raw <- data.raw %>%
     AGE = "Age at injury",
     Time = "Time of follow up (years)",
     Date = "Date of last follow up",
+    FIMMOTD4 = str_replace(attr(data.raw$FIMMOTD, "label"), ":", " quartiles"),
+    FIMCOGD4 = str_replace(attr(data.raw$FIMCOGD, "label"), ":", " quartiles"),
   )
 
 # analytical dataset ------------------------------------------------------

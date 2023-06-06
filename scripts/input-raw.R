@@ -104,14 +104,14 @@ data.raw <- data.raw %>%
    DRSd = c(999),
    EDUCATION = c(999),
    EMPLOYMENT = c(888, 999),
-   FIMMOTD = c(9999),
+   FIMMOTD = c(999),
    FIMTOTD = c(9999),
-   FIMCOGD = c(9999),
+   FIMCOGD = c(999),
    PTADays = c(888, 9999),
    # RURALdc = c(),
    # FollowUpPeriod = c(),
    # IntStatus = c(),
-   RehabDis = c(888, 999)
+   RehabDis = na_date
   )) #%>%
 # this takes TOO LONG to run - switch to manual replacing (above)
   # # replace NA in all Dates
