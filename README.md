@@ -1,4 +1,4 @@
-# Sensitivity of mortality rates to imputation of missing socioeconomic data after brain injury: cohort study
+# Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study
 
 1. To describe the missingness in zip codes at each follow up collection;
 1. To impute missing Zip codes with data available in previous follow up collections.
