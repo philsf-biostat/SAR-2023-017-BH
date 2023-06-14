@@ -16,14 +16,17 @@ tags:
   - survival-analysis
 ---
 
-To assess the sensitivity of the association between mortality and socioeconomic status to the imputation of participant missing location.
+1. To describe the missingness in zip codes at each follow up collection;
+1. To impute missing Zip codes with data available in previous follow up collections.
+1. To assess the sensitivity of the association between mortality and socioeconomic status to the imputation of participant missing location.
 
-Statistical Analysis for PERSON (PLACE, yyyy)
-<!-- Technical Report for PERSON (PLACE, yyyy) -->
+Statistical Analysis for Brennan Hickson (US, 2023)
+<!-- Technical Report for Brennan Hickson (US, 2023) -->
 
 ## Analyses performed
 
 1. Descriptive analysis
+1. Missing data imputation
 1. Inferential analysis
 1. Statistical models
 
@@ -48,11 +51,11 @@ Statistical Analysis for PERSON (PLACE, yyyy)
 
 This analysis is part of a larger project and is supported by other analyses, linked below.
 
-**Effect of socioeconomic status in mortality rates after brain injury: retrospective cohort**
+**Effect of socioeconomic status in mortality rates after brain injury: cohort study**
 
 <https://philsf-biostat.github.io/SAR-2023-004-BH/>
 
-**Migration patterns in a cohort of individuals with brain injury in the US**
+**Time-adjusted effect of socioeconomic status in mortality rates after brain injury: cohort study**
 
 <https://philsf-biostat.github.io/SAR-2023-016-BH/>
 

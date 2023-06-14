@@ -16,6 +16,9 @@ study_period <- c("2010-01-01", "2018-12-31") %>%
 set.seed(42)
 load(file = "dataset/brennan_data.rds")
 
+# save labels before processing
+labs <- var_label(data.raw)
+
 # data cleaning -----------------------------------------------------------
 
 data.raw <- data.raw %>%
@@ -143,7 +146,11 @@ data.raw <- data.raw %>%
   set_variable_labels(
     exposure = "SES quintiles",
     outcome = "Mortality",
-    AGE = "Age at injury",
+    # reprocessed vars
+    AGE = labs$AGE,
+    SCI = labs$SCI,
+    PROBLEMUse = labs$PROBLEMUse,
+    # new vars
     Time = "Time of follow up (years)",
     Date = "Date of last follow up",
     FIMMOTD4 = str_replace(attr(data.raw$FIMMOTD, "label"), ":", " quartiles"),
