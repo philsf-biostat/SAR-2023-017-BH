@@ -69,8 +69,8 @@ data.raw <- data.raw %>%
 Nobs_orig_id <- data.raw %>% distinct(Mod1id) %>% nrow()
 
 na_zip <- c("66666", "88888", "99999", "")
-na_date <- c("4444-04-04", "5555-05-05", "7777-07-07", "8888-08-08", "9999-09-09") %>%
-  as.POSIXct(tz = "UTC")
+na_date <- c("4444-04-04", "5555-05-05", "6666-06-06", "7777-07-07", "8888-08-08", "9999-09-09") %>%
+  as.Date()
 # na_fct <- c("Unknown")
 
 # save var labels before processing
@@ -78,6 +78,10 @@ labs <- data.raw %>% var_label()
 
 # missing data treatment: explicit NA
 data.raw <- data.raw %>%
+  mutate(
+    # simplify dates
+    across(where(is.POSIXt), as_date),
+  ) %>%
   replace_with_na(replace = list(
    # replace NA in all Zipcodes
    ZipInj = na_zip,
@@ -168,8 +172,6 @@ data.raw <- data.raw %>%
   mutate(
     # convert DCI values back to numeric
     across(starts_with("DCI"), as.numeric),
-    # simplify dates
-    across(where(is.POSIXt), as_date),
   )
 
 # keep labelled numeric vars before wholesale conversion to factor
