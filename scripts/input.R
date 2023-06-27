@@ -14,14 +14,15 @@ study_period <- c("2010-01-01", "2018-12-31") %>%
 
 # data loading ------------------------------------------------------------
 set.seed(42)
-load(file = "dataset/brennan_data.rds")
+data.raw <- read_rds("dataset/brennan_data_17.rds")
 
 # save labels before processing
-labs <- var_label(data.raw)
+labs <- var_label(data.raw$data[[1]])
 
 # data cleaning -----------------------------------------------------------
 
 data.raw <- data.raw %>%
+  mutate(data = map(data, ~.x %>%
   select(
     everything(),
   ) %>%
@@ -37,58 +38,71 @@ data.raw <- data.raw %>%
     # time to event (in days)
     Time_d = as.duration(interval(RehabDis, Date)),
     Time = Time_d/dyears(1),
+    .after = DeathF,
   ) %>%
   filter(
   )
+  ))
 
 # rename selecting vars
-demographics <- str_replace(demographics, "Mod1id", "id")
-demographics <- str_replace(demographics, "DCIQuintile", "exposure")
-clinical <- str_replace(clinical, "Mod1id", "id")
-clinical <- str_replace(clinical, "DCIQuintile", "exposure")
+# demographics <- str_replace(demographics, "Mod1id", "id")
+# demographics <- str_replace(demographics, "DCIQuintile", "exposure")
+# clinical <- str_replace(clinical, "Mod1id", "id")
+# clinical <- str_replace(clinical, "DCIQuintile", "exposure")
 
 # exclusion criteria: COVID is a possible confounder, use outcome Status Date to exclude
 data.raw <- data.raw %>%
+  mutate(data = map(data, ~.x %>%
   filter(
     Date <= as.Date("2019-12-31") # last date (status)
   )
+  ))
 
-# exclusion criteria: before 2020
-Nobs_incl_per <- data.raw %>% nrow()
+# # exclusion criteria: before 2020
+# Nobs_incl_per <- data.raw %>% nrow()
 
 # inclusion criteria: up to 10yr of follow up
 data.raw <- data.raw %>%
+  mutate(data = map(data, ~.x %>%
   filter(
     FollowUpPeriod <= 10,
   )
+  ))
 
 # exclusion criteria: redundant participant observations: pick last date of follow up
 data.raw <- data.raw %>%
+  mutate(data = map(data, ~.x %>%
   group_by(id) %>%
   filter(
     FollowUpPeriod == max(FollowUpPeriod, na.rm = TRUE),
   ) %>%
   ungroup()
+  ))
 
-# inclusion criteria: 10yr follow up + unique IDs
-Nobs_incl_id <- data.raw %>% nrow()
+# # inclusion criteria: 10yr follow up + unique IDs
+# Nobs_incl_id <- data.raw %>% nrow()
 
 # inclusion criteria: study period
 data.raw <- data.raw %>%
+  mutate(data = map(data, ~.x %>%
   filter(
     between(RehabDis, study_period[1], study_period[2]), # discharge date
   )
+  ))
 
 # inclusion criteria: valid times
 data.raw <- data.raw %>%
+  mutate(data = map(data, ~.x %>%
   filter(Time>0)
+  ))
 
-# remove invalid observations (outcome at time 0 or below)
-Nobs_invalid <- data.raw %>% nrow()
+# # remove invalid observations (outcome at time 0 or below)
+# Nobs_invalid <- data.raw %>% nrow()
 
 # data wrangling ----------------------------------------------------------
 
 data.raw <- data.raw %>%
+  mutate(data = map(data, ~.x %>%
   mutate(
     id = as.character(id), # or as.factor
     # label SES quintiles
@@ -139,27 +153,32 @@ data.raw <- data.raw %>%
     FIMMOTD4 = cut(FIMMOTD, breaks = c(0, quantile(FIMMOTD, probs = c(.25, .50, .75), na.rm = TRUE), 100), labels = c("Q1", "Q2", "Q3", "Q4")), #, labels = c("Q1", "Q2", "Q3", "Q4"), right = FALSE
     FIMCOGD4 = cut(FIMCOGD, breaks = c(0, quantile(FIMCOGD, probs = c(.25, .50, .75), na.rm = TRUE), 100), labels = c("Q1", "Q2", "Q3", "Q4")),
   )
+  ))
 
 # labels ------------------------------------------------------------------
 
+labs <- list(
+  labs,
+  exposure = "SES quintiles",
+  outcome = "Mortality",
+  Time = "Time of follow up (years)",
+  Date = "Date of last follow up",
+  FIMMOTD4 = labs$FIMMOTD,
+  FIMCOGD4 = labs$FIMCOGD
+)
+
 data.raw <- data.raw %>%
+  mutate(data = map(data, ~.x %>%
   set_variable_labels(
-    exposure = "SES quintiles",
-    outcome = "Mortality",
-    # reprocessed vars
-    AGE = labs$AGE,
-    SCI = labs$SCI,
-    PROBLEMUse = labs$PROBLEMUse,
-    # new vars
-    Time = "Time of follow up (years)",
-    Date = "Date of last follow up",
-    FIMMOTD4 = str_replace(attr(data.raw$FIMMOTD, "label"), ":", " quartiles"),
-    FIMCOGD4 = str_replace(attr(data.raw$FIMCOGD, "label"), ":", " quartiles"),
+    # restore original labels - intersect is used to get only valid colnames
+    .labels = labs[intersect(colnames(.x), names(labs))],
   )
+  ))
 
 # analytical dataset ------------------------------------------------------
 
-analytical <- data.raw %>%
+data.raw <- data.raw %>%
+  mutate(analytical = map(data, ~.x %>%
   # select analytic variables
   select(
     id,
@@ -175,13 +194,23 @@ analytical <- data.raw %>%
     -FollowUpPeriod,
     -Time_d,
   )
+  ))
 
-Nvar_final <- analytical %>% ncol
-Nobs_final <- analytical %>% nrow
+# Nvar_final <- analytical %>% ncol
+# Nobs_final <- analytical %>% nrow
 
 # mockup of analytical dataset for SAP and public SAR
 analytical_mockup <- tibble( id = c( "1", "2", "3", "...", "N") ) %>%
 # analytical_mockup <- tibble( id = c( "1", "2", "3", "...", as.character(Nobs_final) ) ) %>%
-  left_join(analytical %>% head(0), by = "id") %>%
+  left_join(data.raw$analytical[[1]] %>% head(0), by = "id") %>%
   mutate_all(as.character) %>%
   replace(is.na(.), "")
+
+# model data --------------------------------------------------------------
+
+data.raw <- data.raw %>%
+  mutate(md = map(analytical, ~
+                    .x %>%
+                    select(-PriorSeiz) %>%
+                    drop_na()
+  ))

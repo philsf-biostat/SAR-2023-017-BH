@@ -50,31 +50,32 @@ clinical <- c(
 
 num_vars <- c("AGE", "DAYStoREHABdc", "FIMMOTD", "FIMCOGD", "FollowUpPeriod")
 
-# participants data -------------------------------------------------------
-
-set.seed(42)
-
-# read first patient data table
-data.raw <- read_sav("dataset/Form1_20221017.sav")
-
-# join second patient data table
-data.raw <- data.raw %>%
-  left_join(
-    read_sav("dataset/Form2_20221017.sav"),
-    by = "Mod1id",
-    suffix = c("_Form1", "_Form2"),
-  )
-
-# Original N of individuals
-Nobs_orig_id <- data.raw %>% distinct(Mod1id) %>% nrow()
-
 na_zip <- c("66666", "88888", "99999", "")
 na_date <- c("4444-04-04", "5555-05-05", "6666-06-06", "7777-07-07", "8888-08-08", "9999-09-09") %>%
   as.Date()
 # na_fct <- c("Unknown")
 
+# participants data -------------------------------------------------------
+
+set.seed(42)
+
+# read first patient data table
+data.raw <- read_sav("dataset/Form1_20221017.sav") %>%
+  # join second patient data table
+  left_join(
+    read_sav("dataset/Form2_20221017.sav"),
+    by = "Mod1id",
+    suffix = c("_Form1", "_Form2"),
+  ) %>%
+  select(any_of(c(demographics, clinical))) # reduce amount of data collected
+
+# Original N of individuals
+# Nobs_orig_id <- data.raw %>% distinct(Mod1id) %>% nrow()
+
 # save var labels before processing
 labs <- data.raw %>% var_label()
+
+# data cleaning -----------------------------------------------------------
 
 # missing data treatment: explicit NA
 data.raw <- data.raw %>%
@@ -89,7 +90,7 @@ data.raw <- data.raw %>%
    ZipF = na_zip,
    # replace NA in all Dates
    Birth = na_date,
-   Death = na_date,
+   # Death = na_date,
    DeathF = na_date,
    Followup = na_date,
    # replace NA in other covariates
@@ -100,18 +101,18 @@ data.raw <- data.raw %>%
    PriorSeiz = c(66, 77, 99),
    SCI = c(99),
    Cause = c(999),
-   AcutePay1 = c(888, 999),
+   # AcutePay1 = c(888, 999),
    RehabPay1 = c(888,999),
    AGE = c(9999),
    PROBLEMUse = c(77, 99),
    DAYStoREHABdc = c(8888, 9999),
-   DRSd = c(999),
+   # DRSd = c(999),
    EDUCATION = c(999),
    EMPLOYMENT = c(888, 999),
    FIMMOTD = c(999),
-   FIMTOTD = c(9999),
+   # FIMTOTD = c(9999),
    FIMCOGD = c(999),
-   PTADays = c(888, 9999),
+   # PTADays = c(888, 9999),
    # RURALdc = c(),
    # FollowUpPeriod = c(),
    # IntStatus = c(),
@@ -124,81 +125,186 @@ data.raw <- data.raw %>%
   #   condition = ~.x %in% na_date
   #   )
 
-# data cleaning -----------------------------------------------------------
+print(data.raw, n=0)
+ddd <- data.raw
 
-# # create shadow vars before imputation
-# data.raw <- data.raw %>%
-#   mutate(ZipDis.Shadow = is.na(ZipDis), .after = ZipDis)
-# 
-# # impute Zip codes
-# data.raw <- data.raw %>%
-#   mutate(
-#     # Fill missing ZipDis with ZipInj
-#     ZipDis = if_else(is.na(ZipDis), ZipInj, ZipDis),
-#     # Fill missing ZipF with (filled) ZipDis
-#     ZipF = if_else(is.na(ZipF), ZipDis, ZipF),
-#     # Fill Death dates from Form1
-#     DeathF = if_else(is.na(DeathF), Death, DeathF),
-#     # keep FU as numeric, for later filtering
-#     FollowUpPeriod = as.numeric(FollowUpPeriod),
-#   )
-# 
-# # which values were imputed?
-# imputed <- data.raw %>%
-#   # select(starts_with("ZipD")) %>%
-#   filter(ZipDis.Shadow, !is.na(ZipDis))
+# prepare datasets --------------------------------------------------------
+
+# This section will break the orig data into 4 datasets
+# - data with consecutive followup, for location data (cc, and its siblings)
+# - date of death, with follow indicator (Deaths)
+# - participant constant data (d)
+# - individuals with no followup identifiers (lost)
+# data.raw will be reconstructed from multiple datasets that undergone different imputation procedures with the previous structure
+
+# separate death dates
+Deaths <- data.raw %>%
+  select(Mod1id, FollowUpPeriod, DeathF) %>%
+  drop_na(DeathF)
+
+# separate location data
+cc <- data.raw %>% # complete cases
+  select(Mod1id, FollowUpPeriod, Injury, ZipInj, RehabDis, ZipDis, Followup, ZipF, IntStatus) %>%
+  rename(Date_Inj = Injury, Zip_Inj = ZipInj, Date_Dis = RehabDis, Zip_Dis = ZipDis, Date_ = Followup, Zip_ = ZipF, IntStatus_ = IntStatus) %>%
+  pivot_wider(names_from = FollowUpPeriod, values_from = c(Date_, Zip_, IntStatus_), names_sep = "") %>%
+  select(-ends_with("NA")) %>% # Date_NA and Zip_NA
+  #filter(Mod1id == 13446) %>%
+  mutate(across(starts_with("Zip"), as.character)) %>% # remove labels from Zip vars
+  pivot_longer(cols = starts_with(c("Date", "Zip", "IntStatus")), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") %>%
+  replace_with_na(list(FollowUpPeriod = "NA"))
+
+# clean raw data
+d <- data.raw %>%
+  select(-c(FollowUpPeriod, Injury, ZipInj, RehabDis, ZipDis, Followup, ZipF, IntStatus, DeathF)) %>%
+  distinct()
+
+# lost to follow up
+lost <- data.raw %>%
+  filter(is.na(FollowUpPeriod))
+
+# impute Zip codes --------------------------------------------------------
+
+# temporary fix for FollowUpPeriod: set numeric for ordering before imputation
+cc <- cc %>%
+  mutate(
+    FollowUpPeriod = str_replace(FollowUpPeriod, "Dis", "0"),
+    FollowUpPeriod = str_replace(FollowUpPeriod, "Inj", "-1"),
+    FollowUpPeriod = parse_number(FollowUpPeriod),
+  ) %>%
+  group_by(Mod1id) %>%
+  arrange(FollowUpPeriod) %>%
+  ungroup()
+
+# impute LOCF
+locf <- cc %>%
+  group_by(Mod1id) %>%
+  fill(Zip, .direction = "down") %>%
+  ungroup()
+
+# imput LOCF 2 (down + up)
+downup <- cc %>%
+  group_by(Mod1id) %>%
+  fill(Zip, .direction = "downup") %>%
+  ungroup()
+
+# prepare to work with multiple datasets
+data.raw <- bind_rows(
+  cc = cc,
+  locf = locf,
+  downup = downup,
+  .id = "dataset") %>%
+  group_by(dataset) %>%
+  nest()
+print(data.raw)
+
+# temporary fix for FollowUpPeriod: revert levels after imputation
+data.raw <- data.raw %>%
+  mutate(data = map(data, ~ .x %>%
+                      mutate(
+                        FollowUpPeriod = as.character(FollowUpPeriod),
+                        FollowUpPeriod = str_replace(FollowUpPeriod, "^-1$", "Inj"),
+                        FollowUpPeriod = str_replace(FollowUpPeriod, "^0$", "Dis"),
+                      )
+                    ))
+print(data.raw)
 
 # SES data ----------------------------------------------------------------
 
-# join Zipcodes table
+# Nvar_1 <- data.raw %>% ncol()
+
+# read all columns as character, so Zipcodes are kept as originally encoded
+DCI <- read_excel("dataset/DCI.xlsx", col_types = c("text")) %>%
+  select(Zipcode, starts_with("DCI")) # only DCI* data from table
+
+# join SES data
 data.raw <- data.raw %>%
-  left_join(
-    # read all columns as character, so Zipcodes are kept as originally encoded
-    read_excel("dataset/DCI.xlsx", col_types = c("text")),
-    by = c("ZipDis" = "Zipcode")
-  )
+  mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
+                      left_join(DCI, by = c("Zip" = "Zipcode"))
+                    ))
+print(data.raw)
+
+# reshape after getting SES data: extract Inj/Dis from the Zip and Date as separate cols
+data.raw <- data.raw %>%
+  mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
+                      pivot_wider(names_from = FollowUpPeriod, values_from = c(Date, Zip, starts_with("DCI"), IntStatus)) %>%
+                      pivot_longer(-c(Mod1id, ends_with(c("Inj", "Dis"))), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") %>%
+                      # IntStatus was spread, but there was never data for it: dropping
+                      select(-IntStatus_Dis, -IntStatus_Inj) %>%
+                      # DCI data was spread, and could be useful, but we don't need those: dropping
+                      select(-DCIQuintile_Inj, -DCIQuintile_Dis, -DCIDecile_Inj, -DCIDecile_Dis, -DCIDistressScore_Inj, -DCIDistressScore_Dis) %>%
+                      mutate(FollowUpPeriod = parse_number(FollowUpPeriod))
+                    ))
+print(data.raw)
+
+# restore original structure ----------------------------------------------
+
+# include deaths and individual characteristics
+data.raw <- data.raw %>%
+  mutate(data = map(data, ~ .x %>%
+                      left_join(Deaths, by = c("Mod1id", "FollowUpPeriod")) %>%
+                      left_join(d, by = c("Mod1id")) %>%
+                      # rename back columns to previous names
+                      rename(
+                        ZipF = Zip,
+                        ZipDis = Zip_Dis,
+                        RehabDis = Date_Dis,
+                        Followup = Date,
+                        ZipInj = Zip_Inj,
+                        Injury = Date_Inj,
+                      )
+                    ))
+
+# # restore lost to followup
+# # not required / redundant / non-informative
+# data.raw <- data.raw %>%
+#   mutate(data = map(data, ~
+#                       .x %>%
+#                       # left_join(lost, by = c("Mod1id", "FollowUpPeriod", "IntStatus"))
+#                       bind_rows(lost)
+#   ))
+
+# test: 13446 benefits from locf, outcome 1 at follow up 15
+data.raw %>%
+  filter(dataset == "cc") %>%
+  unnest(data) %>%
+  filter(Mod1id == 13446) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, DeathF, FollowUpPeriod, ZipDis, ZipInj, ZipF)
+
+# test: 13444 benefits from downup, outcome 0 at all follow ups
+data.raw %>%
+  filter(dataset == "cc") %>%
+  unnest(data) %>%
+  filter(Mod1id == 13444) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, DeathF, FollowUpPeriod, ZipDis, ZipInj, ZipF)
 
 # size of original dataset, before filtering
-Nvar_orig <- data.raw %>% ncol
-Nobs_orig <- data.raw %>% nrow
+# Nvar_orig <- data.raw %>% ncol
+# Nobs_orig <- data.raw %>% nrow
 
 # data wrangling ----------------------------------------------------------
 
 data.raw <- data.raw %>%
-  select(
-    all_of(demographics),
-    all_of(clinical),
-  ) %>%
-  mutate(
-    # convert DCI values back to numeric
-    across(starts_with("DCI"), as.numeric),
-  )
-
-# keep labelled numeric vars before wholesale conversion to factor
-data.raw <- data.raw %>%
-  mutate(
-    across(all_of(num_vars), as.numeric),
-  )
-
-# convert haven_labelled to factor (missing value codes are used automatically)
-data.raw <- data.raw %>%
-  mutate(
-    across(where(is.labelled), as_factor),
-  )
-
-# convert back (from factor) the variable types
-data.raw <- data.raw %>%
-  mutate(
-    across(starts_with("Zip"), as.character),
-  )
-
-# clear unused factor levels
-data.raw <- data.raw %>%
-  droplevels()
+  mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
+      mutate(
+        # convert DCI values back to numeric
+        across(starts_with("DCI"), as.numeric),
+        # keep labelled numeric vars before wholesale conversion to factor
+        across(any_of(num_vars), as.numeric),
+        # convert haven_labelled to factor (missing value codes are used automatically)
+        across(where(is.labelled), as_factor),
+        # convert back (from factor) the variable types
+        across(starts_with("Zip"), as.character),
+      ) %>%
+      # clear unused factor levels
+      droplevels()
+  ))
 
 # restore original labels - intersect is used to get only valid colnames
-var_label(data.raw) <- labs[intersect(colnames(data.raw), names(labs))]
+data.raw <- data.raw %>%
+  mutate(
+    data = map(data, ~ .x %>% set_variable_labels(.labels = labs[intersect(colnames(.x), names(labs))]) )
+    )
+print(data.raw)
 
 # data saving -------------------------------------------------------------
 
-save(data.raw, Nobs_orig, Nvar_orig, Nobs_orig_id, demographics, clinical, file = "dataset/brennan_data.rds")
+# save(data.raw, Nobs_orig, Nvar_orig, Nobs_orig_id, demographics, clinical, file = "dataset/brennan_data_17.rds")
+write_rds(data.raw, "dataset/brennan_data_17.rds")
