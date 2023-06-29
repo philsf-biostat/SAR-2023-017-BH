@@ -31,14 +31,7 @@ data.raw <- data.raw %>%
     exposure = DCIQuintile,
   ) %>%
   mutate(
-    # create new Date with either DeathF OR Followup - prioritize Deaths over Followup when both are present
-    Date = if_else(is.na(DeathF), Followup, DeathF),
-    # status at followup Date
-    outcome = as.numeric(!is.na(DeathF)), # 0=alive, 1=dead
-    # time to event (in days)
-    Time_d = as.duration(interval(RehabDis, Date)),
-    Time = Time_d/dyears(1),
-    .after = DeathF,
+    Date = Followup,
   ) %>%
   filter(
   )
@@ -107,6 +100,8 @@ data.raw <- data.raw %>%
     id = as.character(id), # or as.factor
     # label SES quintiles
     exposure = factor(exposure, labels = c("Prosperous", "Comfortable", "Mid-Tier", "At-Risk", "Distressed")),
+    # convert Time to years
+    Time = Time/dyears(1),
     # age at time of injury
     AGE = if_else(is.na(AGE), floor(as.duration(interval(Birth, Injury))/dyears(1)), AGE),
     # reduce number of categories
@@ -184,7 +179,7 @@ data.raw <- data.raw %>%
     id,
     exposure,
     outcome,
-    Date,
+    # Date,
     Time,
     everything(),
     -starts_with("Zip"),
@@ -192,7 +187,7 @@ data.raw <- data.raw %>%
     -where(is.Date),
     -IntStatus,
     -FollowUpPeriod,
-    -Time_d,
+    # -Time_d,
   )
   ))
 

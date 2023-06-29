@@ -137,26 +137,32 @@ ddd <- data.raw
 # - individuals with no followup identifiers (lost)
 # data.raw will be reconstructed from multiple datasets that undergone different imputation procedures with the previous structure
 
-# separate death dates
-Deaths <- data.raw %>%
-  select(Mod1id, FollowUpPeriod, DeathF) %>%
-  drop_na(DeathF)
+# start fresh
+# merge DeathF and Followup into a single Date + create Status/Time at each date
+cc <- data.raw %>%
+  mutate(
+    # create new Date with either DeathF OR Followup - prioritize Deaths over Followup when both are present
+    Date = if_else(is.na(DeathF), Followup, DeathF),
+    # status at followup Date
+    outcome = as.numeric(!is.na(DeathF)), # 0=alive, 1=dead
+    # time to event (in days)
+    Time = as.duration(interval(RehabDis, Date)),
+    # Time = Time_d/dyears(1),
+    .after = DeathF,
+  ) %>% select(-DeathF, -Followup) # Death and Followup are no longer needed: dropping
 
-# separate location data
-cc <- data.raw %>% # complete cases
-  select(Mod1id, FollowUpPeriod, Injury, ZipInj, RehabDis, ZipDis, Followup, ZipF, IntStatus) %>%
-  rename(Date_Inj = Injury, Zip_Inj = ZipInj, Date_Dis = RehabDis, Zip_Dis = ZipDis, Date_ = Followup, Zip_ = ZipF, IntStatus_ = IntStatus) %>%
-  pivot_wider(names_from = FollowUpPeriod, values_from = c(Date_, Zip_, IntStatus_), names_sep = "") %>%
+# add Inj/Dis into Date/Zip: spread wide then collapse into long format
+cc <- cc %>%
+  # select(-c(SexF, Race, Mar, AGE, PriorSeiz, PROBLEMUse, EDUCATION, EMPLOYMENT, RURALdc, SCI, Cause, RehabPay1, DAYStoREHABdc, FIMMOTD, FIMCOGD, ResDis)) %>%
+  rename(Date_Inj = Injury, Zip_Inj = ZipInj, Date_Dis = RehabDis, Zip_Dis = ZipDis, Zip = ZipF) %>%
+  # spread FollowUpPeriod across all 3 variables (Date, Zip, IntStatus)
+  pivot_wider(names_from = FollowUpPeriod, values_from = c(Date, Zip, IntStatus, Time, outcome)) %>%
   select(-ends_with("NA")) %>% # Date_NA and Zip_NA
   #filter(Mod1id == 13446) %>%
   mutate(across(starts_with("Zip"), as.character)) %>% # remove labels from Zip vars
-  pivot_longer(cols = starts_with(c("Date", "Zip", "IntStatus")), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") %>%
-  replace_with_na(list(FollowUpPeriod = "NA"))
-
-# clean raw data
-d <- data.raw %>%
-  select(-c(FollowUpPeriod, Injury, ZipInj, RehabDis, ZipDis, Followup, ZipF, IntStatus, DeathF)) %>%
-  distinct()
+  # collapse all 3 variables (Date, Zip, IntStatus)
+  pivot_longer(cols = starts_with(c("Date", "Zip", "IntStatus", "Time", "outcome")), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") #%>%
+  # replace_with_na(list(FollowUpPeriod = "NA"))
 
 # lost to follow up
 lost <- data.raw %>%
@@ -219,20 +225,24 @@ DCI <- read_excel("dataset/DCI.xlsx", col_types = c("text")) %>%
 # join SES data
 data.raw <- data.raw %>%
   mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
+                      # join SES data
                       left_join(DCI, by = c("Zip" = "Zipcode"))
                     ))
 print(data.raw)
 
-# reshape after getting SES data: extract Inj/Dis from the Zip and Date as separate cols
+# reshape after getting SES data: extract Inj/Dis from the Zip and Date as separate cols (we could drop_na(Date) after this)
+# FIXME: we are dropping DCI/Dis in this chunk, which was defined as the exposure
+# idea, drop Inj and keep Dis inside long table
 data.raw <- data.raw %>%
   mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
-                      pivot_wider(names_from = FollowUpPeriod, values_from = c(Date, Zip, starts_with("DCI"), IntStatus)) %>%
-                      pivot_longer(-c(Mod1id, ends_with(c("Inj", "Dis"))), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") %>%
+                      pivot_wider(names_from = FollowUpPeriod, values_from = c(Date, Zip, starts_with("DCI"), IntStatus, Time, outcome)) %>%
+                      pivot_longer(c(starts_with(c("Date", "Zip", "DCI", "IntStatus", "Time", "outcome")), -ends_with(c("Inj", "Dis"))), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") %>%
                       # IntStatus was spread, but there was never data for it: dropping
-                      select(-IntStatus_Dis, -IntStatus_Inj) %>%
-                      # DCI data was spread, and could be useful, but we don't need those: dropping
-                      select(-DCIQuintile_Inj, -DCIQuintile_Dis, -DCIDecile_Inj, -DCIDecile_Dis, -DCIDistressScore_Inj, -DCIDistressScore_Dis) %>%
-                      mutate(FollowUpPeriod = parse_number(FollowUpPeriod))
+                      select(-IntStatus_Dis, -IntStatus_Inj, , -Time_Inj, - Time_Dis, -outcome_Inj, -outcome_Dis) %>%
+                      # # DCI data was spread, and could be useful, but we don't need those: dropping
+                      # select(-DCIQuintile_Inj, -DCIQuintile_Dis, -DCIDecile_Inj, -DCIDecile_Dis, -DCIDistressScore_Inj, -DCIDistressScore_Dis) %>%
+                      mutate(FollowUpPeriod = parse_number(FollowUpPeriod)) %>%
+                      drop_na(Date)
                     ))
 print(data.raw)
 
@@ -241,8 +251,6 @@ print(data.raw)
 # include deaths and individual characteristics
 data.raw <- data.raw %>%
   mutate(data = map(data, ~ .x %>%
-                      left_join(Deaths, by = c("Mod1id", "FollowUpPeriod")) %>%
-                      left_join(d, by = c("Mod1id")) %>%
                       # rename back columns to previous names
                       rename(
                         ZipF = Zip,
@@ -267,13 +275,13 @@ data.raw <- data.raw %>%
 data.raw %>%
   filter(dataset == "cc") %>%
   unnest(data) %>%
-  filter(Mod1id == 13446) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, DeathF, FollowUpPeriod, ZipDis, ZipInj, ZipF)
+  filter(Mod1id == 13446) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, FollowUpPeriod, ZipDis, ZipInj, ZipF)
 
 # test: 13444 benefits from downup, outcome 0 at all follow ups
 data.raw %>%
   filter(dataset == "cc") %>%
   unnest(data) %>%
-  filter(Mod1id == 13444) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, DeathF, FollowUpPeriod, ZipDis, ZipInj, ZipF)
+  filter(Mod1id == 13444) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, FollowUpPeriod, ZipDis, ZipInj, ZipF)
 
 # size of original dataset, before filtering
 # Nvar_orig <- data.raw %>% ncol
