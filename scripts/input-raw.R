@@ -231,16 +231,18 @@ data.raw <- data.raw %>%
 print(data.raw)
 
 # reshape after getting SES data: extract Inj/Dis from the Zip and Date as separate cols (we could drop_na(Date) after this)
-# FIXME: we are dropping DCI/Dis in this chunk, which was defined as the exposure
-# idea, drop Inj and keep Dis inside long table
 data.raw <- data.raw %>%
   mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
-                      pivot_wider(names_from = FollowUpPeriod, values_from = c(Date, Zip, starts_with("DCI"), IntStatus, Time, outcome)) %>%
-                      pivot_longer(c(starts_with(c("Date", "Zip", "DCI", "IntStatus", "Time", "outcome")), -ends_with(c("Inj", "Dis"))), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") %>%
+                      # add exposure
+                      mutate(exposure = DCIQuintile) %>%
+                      pivot_wider(names_from = FollowUpPeriod, values_from = c(Date, Zip, starts_with("DCI"), IntStatus, Time, outcome, exposure)) %>%
+                      pivot_longer(c(starts_with(c("Date", "Zip", "DCI", "IntStatus", "Time", "outcome", "exposure")), -ends_with(c("Inj", "Dis"))), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") %>%
                       # IntStatus was spread, but there was never data for it: dropping
                       select(-IntStatus_Dis, -IntStatus_Inj, , -Time_Inj, - Time_Dis, -outcome_Inj, -outcome_Dis) %>%
                       # # DCI data was spread, and could be useful, but we don't need those: dropping
                       # select(-DCIQuintile_Inj, -DCIQuintile_Dis, -DCIDecile_Inj, -DCIDecile_Dis, -DCIDistressScore_Inj, -DCIDistressScore_Dis) %>%
+                      # ensure exposure works for previous analysis code
+                      # mutate(exposure_Dis = DCIQuintile_Dis) %>%
                       mutate(FollowUpPeriod = parse_number(FollowUpPeriod)) %>%
                       drop_na(Date)
                     ))
@@ -275,13 +277,13 @@ data.raw <- data.raw %>%
 data.raw %>%
   filter(dataset == "cc") %>%
   unnest(data) %>%
-  filter(Mod1id == 13446) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, FollowUpPeriod, ZipDis, ZipInj, ZipF)
+  filter(Mod1id == 13446) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, FollowUpPeriod, ZipDis, starts_with("exposure"), ZipInj, ZipF)
 
 # test: 13444 benefits from downup, outcome 0 at all follow ups
 data.raw %>%
   filter(dataset == "cc") %>%
   unnest(data) %>%
-  filter(Mod1id == 13444) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, FollowUpPeriod, ZipDis, ZipInj, ZipF)
+  filter(Mod1id == 13444) %>% select(dataset, Mod1id, Injury, RehabDis, Followup, FollowUpPeriod, ZipDis, starts_with("exposure"), ZipInj, ZipF)
 
 # size of original dataset, before filtering
 # Nvar_orig <- data.raw %>% ncol

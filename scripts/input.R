@@ -28,10 +28,13 @@ data.raw <- data.raw %>%
   ) %>%
   rename(
     id = Mod1id,
-    exposure = DCIQuintile,
+    # last known location at each follow_up: original analysis uses SES at baseline (discharge)
+    exposure_last = exposure,
   ) %>%
   mutate(
     Date = Followup,
+    # reproduce original analysis: constant exposure, SES at baseline (discharge)
+    exposure = exposure_Dis,
   ) %>%
   filter(
   )
