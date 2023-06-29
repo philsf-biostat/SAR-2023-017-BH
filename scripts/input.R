@@ -102,7 +102,8 @@ data.raw <- data.raw %>%
   mutate(
     id = as.character(id), # or as.factor
     # label SES quintiles
-    exposure = factor(exposure, labels = c("Prosperous", "Comfortable", "Mid-Tier", "At-Risk", "Distressed")),
+    # exposure = factor(exposure, labels = c("Prosperous", "Comfortable", "Mid-Tier", "At-Risk", "Distressed")),
+    across(starts_with("exposure"), ~ factor(.x, labels = c("Prosperous", "Comfortable", "Mid-Tier", "At-Risk", "Distressed"))),
     # convert Time to years
     Time = Time/dyears(1),
     # age at time of injury
