@@ -55,6 +55,11 @@ na_date <- c("4444-04-04", "5555-05-05", "6666-06-06", "7777-07-07", "8888-08-08
   as.Date()
 # na_fct <- c("Unknown")
 
+# read DCI/SES data
+# read all columns as character, so Zipcodes are kept as originally encoded
+DCI <- read_excel("dataset/DCI.xlsx", col_types = c("text")) %>%
+  select(Zipcode, starts_with("DCI")) # only DCI* data from table
+
 # participants data -------------------------------------------------------
 
 set.seed(42)
@@ -125,9 +130,6 @@ data.raw <- data.raw %>%
   #   condition = ~.x %in% na_date
   #   )
 
-print(data.raw, n=0)
-ddd <- data.raw
-
 # prepare datasets --------------------------------------------------------
 
 # This section will break the orig data into 4 datasets
@@ -164,9 +166,9 @@ cc <- cc %>%
   pivot_longer(cols = starts_with(c("Date", "Zip", "IntStatus", "Time", "outcome")), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") #%>%
   # replace_with_na(list(FollowUpPeriod = "NA"))
 
-# lost to follow up
-lost <- data.raw %>%
-  filter(is.na(FollowUpPeriod))
+# # lost to follow up
+# lost <- data.raw %>%
+#   filter(is.na(FollowUpPeriod))
 
 # impute Zip codes --------------------------------------------------------
 
@@ -201,7 +203,6 @@ data.raw <- bind_rows(
   .id = "dataset") %>%
   group_by(dataset) %>%
   nest()
-print(data.raw)
 
 # temporary fix for FollowUpPeriod: revert levels after imputation
 data.raw <- data.raw %>%
@@ -212,15 +213,10 @@ data.raw <- data.raw %>%
                         FollowUpPeriod = str_replace(FollowUpPeriod, "^0$", "Dis"),
                       )
                     ))
-print(data.raw)
 
 # SES data ----------------------------------------------------------------
 
 # Nvar_1 <- data.raw %>% ncol()
-
-# read all columns as character, so Zipcodes are kept as originally encoded
-DCI <- read_excel("dataset/DCI.xlsx", col_types = c("text")) %>%
-  select(Zipcode, starts_with("DCI")) # only DCI* data from table
 
 # join SES data
 data.raw <- data.raw %>%
@@ -228,7 +224,6 @@ data.raw <- data.raw %>%
                       # join SES data
                       left_join(DCI, by = c("Zip" = "Zipcode"))
                     ))
-print(data.raw)
 
 # reshape after getting SES data: extract Inj/Dis from the Zip and Date as separate cols (we could drop_na(Date) after this)
 data.raw <- data.raw %>%
@@ -246,7 +241,6 @@ data.raw <- data.raw %>%
                       mutate(FollowUpPeriod = parse_number(FollowUpPeriod)) %>%
                       drop_na(Date)
                     ))
-print(data.raw)
 
 # restore original structure ----------------------------------------------
 
@@ -312,7 +306,6 @@ data.raw <- data.raw %>%
   mutate(
     data = map(data, ~ .x %>% set_variable_labels(.labels = labs[intersect(colnames(.x), names(labs))]) )
     )
-print(data.raw)
 
 # data saving -------------------------------------------------------------
 
