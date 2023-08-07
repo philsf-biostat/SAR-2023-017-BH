@@ -130,7 +130,7 @@ data.raw <- data.raw %>%
   #   condition = ~.x %in% na_date
   #   )
 
-# prepare datasets --------------------------------------------------------
+# prepare base dataset ----------------------------------------------------
 
 # This section will break the orig data into 4 datasets
 # - data with consecutive followup, for location data (cc, and its siblings)
@@ -170,8 +170,6 @@ cc <- cc %>%
 # lost <- data.raw %>%
 #   filter(is.na(FollowUpPeriod))
 
-# impute Zip codes --------------------------------------------------------
-
 # temporary fix for FollowUpPeriod: set numeric for ordering before imputation
 cc <- cc %>%
   mutate(
@@ -182,26 +180,35 @@ cc <- cc %>%
   # drop unused followups that were created when spreading the data
   drop_na(Date) %>%
   group_by(Mod1id) %>%
+  # sort follow up indicator by id
   arrange(FollowUpPeriod) %>%
-  ungroup()
+  ungroup() %>%
+  # temporary fix for FollowUpPeriod: revert levels after ordering
+  mutate(
+    FollowUpPeriod = as.character(FollowUpPeriod),
+    FollowUpPeriod = str_replace(FollowUpPeriod, "^-1$", "Inj"),
+    FollowUpPeriod = str_replace(FollowUpPeriod, "^0$", "Dis"),
+  )
 
-# impute LOCF
-locf <- cc %>%
-  group_by(Mod1id) %>%
-  fill(Zip, .direction = "down") %>%
-  ungroup()
+# impute Zip codes --------------------------------------------------------
 
-# imput LOCF 2 (down + up)
-downup <- cc %>%
-  group_by(Mod1id) %>%
-  fill(Zip, .direction = "downup") %>%
-  ungroup()
+# # impute LOCF
+# locf <- cc %>%
+#   group_by(Mod1id) %>%
+#   fill(Zip, .direction = "down") %>%
+#   ungroup()
+# 
+# # imput LOCF 2 (down + up)
+# downup <- cc %>%
+#   group_by(Mod1id) %>%
+#   fill(Zip, .direction = "downup") %>%
+#   ungroup()
 
 # prepare to work with multiple datasets
 data.raw <- bind_rows(
   cc = cc,
-  locf = locf,
-  downup = downup,
+  locf = cc %>% group_by(Mod1id) %>% fill(Zip, .direction = "down") %>% ungroup(),
+  downup = cc %>% group_by(Mod1id) %>% fill(Zip, .direction = "downup") %>% ungroup(),
   .id = "dataset") %>%
   group_by(dataset) %>%
   nest()
@@ -215,15 +222,15 @@ data.raw <- data.raw %>%
                       replace_na(replace = list(outcome = 0))
                     ))
 
-# temporary fix for FollowUpPeriod: revert levels after imputation
-data.raw <- data.raw %>%
-  mutate(data = map(data, ~ .x %>%
-                      mutate(
-                        FollowUpPeriod = as.character(FollowUpPeriod),
-                        FollowUpPeriod = str_replace(FollowUpPeriod, "^-1$", "Inj"),
-                        FollowUpPeriod = str_replace(FollowUpPeriod, "^0$", "Dis"),
-                      )
-                    ))
+# # temporary fix for FollowUpPeriod: revert levels after imputation
+# data.raw <- data.raw %>%
+#   mutate(data = map(data, ~ .x %>%
+#                       mutate(
+#                         FollowUpPeriod = as.character(FollowUpPeriod),
+#                         FollowUpPeriod = str_replace(FollowUpPeriod, "^-1$", "Inj"),
+#                         FollowUpPeriod = str_replace(FollowUpPeriod, "^0$", "Dis"),
+#                       )
+#                     ))
 
 # SES data ----------------------------------------------------------------
 
