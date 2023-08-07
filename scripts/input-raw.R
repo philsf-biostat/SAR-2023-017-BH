@@ -179,6 +179,8 @@ cc <- cc %>%
     FollowUpPeriod = str_replace(FollowUpPeriod, "Inj", "-1"),
     FollowUpPeriod = parse_number(FollowUpPeriod),
   ) %>%
+  # drop unused followups that were created when spreading the data
+  drop_na(Date) %>%
   group_by(Mod1id) %>%
   arrange(FollowUpPeriod) %>%
   ungroup()
@@ -207,7 +209,6 @@ data.raw <- bind_rows(
 # define exposure + fill Time/outcome at baseline
 data.raw <- data.raw %>%
   mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
-                      drop_na(Date) %>%
                       # fill Time at Dis
                       mutate(Time = if_else(FollowUpPeriod == "Dis", duration(0), Time)) %>%
                       # fill outcome at Inj and Dis
@@ -249,6 +250,7 @@ data.raw <- data.raw %>%
                       # ensure exposure works for previous analysis code
                       # mutate(exposure_Dis = DCIQuintile_Dis) %>%
                       mutate(FollowUpPeriod = parse_number(FollowUpPeriod)) %>%
+                      # drop unused followups that were created when spreading the data
                       drop_na(Date)
                     ))
 
