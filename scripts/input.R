@@ -210,6 +210,6 @@ analytical_mockup <- tibble( id = c( "1", "2", "3", "...", "N") ) %>%
 data.raw <- data.raw %>%
   mutate(md = map(analytical, ~
                     .x %>%
-                    select(-PriorSeiz) %>%
+                    select(-c(PriorSeiz, exposure_Inj, exposure_Dis, exposure_last)) %>%
                     drop_na()
   ))
