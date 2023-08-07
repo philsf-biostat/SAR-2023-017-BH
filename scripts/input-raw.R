@@ -204,6 +204,16 @@ data.raw <- bind_rows(
   group_by(dataset) %>%
   nest()
 
+# define exposure + fill Time/outcome at baseline
+data.raw <- data.raw %>%
+  mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
+                      drop_na(Date) %>%
+                      # fill Time at Dis
+                      mutate(Time = if_else(FollowUpPeriod == "Dis", duration(0), Time)) %>%
+                      # fill outcome at Inj and Dis
+                      replace_na(replace = list(outcome = 0))
+                    ))
+
 # temporary fix for FollowUpPeriod: revert levels after imputation
 data.raw <- data.raw %>%
   mutate(data = map(data, ~ .x %>%
@@ -222,14 +232,14 @@ data.raw <- data.raw %>%
 data.raw <- data.raw %>%
   mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
                       # join SES data
-                      left_join(DCI, by = c("Zip" = "Zipcode"))
+                      left_join(DCI, by = c("Zip" = "Zipcode")) %>%
+                      # define exposure
+                      mutate(exposure = DCIQuintile)
                     ))
 
 # reshape after getting SES data: extract Inj/Dis from the Zip and Date as separate cols (we could drop_na(Date) after this)
 data.raw <- data.raw %>%
   mutate(data = map(data, ~ .x %>% # operate on data.raw multiple times
-                      # add exposure
-                      mutate(exposure = DCIQuintile) %>%
                       pivot_wider(names_from = FollowUpPeriod, values_from = c(Date, Zip, starts_with("DCI"), IntStatus, Time, outcome, exposure)) %>%
                       pivot_longer(c(starts_with(c("Date", "Zip", "DCI", "IntStatus", "Time", "outcome", "exposure")), -ends_with(c("Inj", "Dis"))), names_to = c(".value", "FollowUpPeriod"), names_sep = "_") %>%
                       # IntStatus was spread, but there was never data for it: dropping
