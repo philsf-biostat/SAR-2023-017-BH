@@ -43,6 +43,8 @@ clinical <- c(
   # "FIMTOTD",
   "FIMMOTD",
   "FIMCOGD",
+  # "FIMMOTF",
+  # "FIMCOGF",
   "DeathF",
   "FollowUpPeriod",
   "IntStatus",
@@ -116,6 +118,8 @@ cc <- cc %>%
    EMPLOYMENT = c(888, 999),
    FIMMOTD = c(999),
    FIMCOGD = c(999),
+   # FIMMOTF = c(999),
+   # FIMCOGF = c(999),
    # PTADays = c(888, 9999),
    # RURALdc = c(),
    # FollowUpPeriod = c(),
@@ -173,6 +177,7 @@ cc <- cc %>%
                                     , "outcome_" # is time-varying, but not yet defined at follow-up time points
                                     # , "Time_" # will be time-varying, but not created yet
                                     , "Followup_", "DeathF_" # time-varying
+                                    # , "FIMMOTF_", "FIMCOGF_" # time-varying
                                     )), names_to = c(".value", "FollowUpPeriod"), names_sep = "_")
 
 # define new date-based variables: Time, outcome
