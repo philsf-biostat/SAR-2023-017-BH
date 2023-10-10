@@ -16,6 +16,7 @@ study_period <- c("2010-01-01", "2018-12-31") %>%
 set.seed(42)
 analytical <- read_rds("dataset/brennan_data_17.rds")
 
+
 # save labels before processing
 labs <- var_label(analytical$data[[1]])
 
@@ -28,13 +29,14 @@ analytical <- analytical %>%
   ) %>%
   rename(
     id = Mod1id,
-    # last known location at each follow_up: original analysis uses SES at baseline (discharge)
-    exposure_last = exposure,
+    # # last known location at each follow_up: original analysis uses SES at baseline (discharge)
+    # exposure_last = exposure,
   ) %>%
   mutate(
-    Date = Followup,
-    # reproduce original analysis: constant exposure, SES at baseline (discharge)
-    exposure = exposure_Dis,
+    # Date = Followup,
+    # # reproduce original analysis: constant exposure, SES at baseline (discharge)
+    # exposure = exposure_Dis,
+    # new data: time-varying exposure
   ) %>%
   filter(
   )
@@ -45,6 +47,14 @@ analytical <- analytical %>%
 # demographics <- str_replace(demographics, "DCIQuintile", "exposure")
 # clinical <- str_replace(clinical, "Mod1id", "id")
 # clinical <- str_replace(clinical, "DCIQuintile", "exposure")
+
+# inclusion criteria: select observations starting at discharge
+analytical <- analytical %>%
+  mutate(data = map(data, ~.x %>%
+                      filter(
+                        FollowUpPeriod > -1 # Injury date is -1
+                      )
+  ))
 
 # exclusion criteria: COVID is a possible confounder, use outcome Status Date to exclude
 analytical <- analytical %>%
@@ -65,9 +75,20 @@ analytical <- analytical %>%
   )
   ))
 
-# keep multiple observations before exlusion criteria: full_*
+# keep multiple observations before exclusion criteria: mult_*
 analytical2 <- analytical
-analytical2[1:3, 1] <- str_c("full_", pull(analytical[1:3, 1]))
+
+# rename datasets
+analytical[1:3, 1] <- str_c("sing_", pull(analytical[1:3, 1]))
+analytical2[1:3, 1] <- str_c("mult_", pull(analytical2[1:3, 1]))
+
+# # use time-varying SES in mult_*
+# analytical2 <- analytical2 %>%
+#   mutate(data = map(data, ~.x %>%
+#                       mutate(
+#                         exposure = exposure_last,
+#                       )
+#   ))
 
 # exclusion criteria: redundant participant observations: pick last date of follow up
 analytical <- analytical %>%
@@ -79,8 +100,24 @@ analytical <- analytical %>%
   ungroup()
   ))
 
+# single observation dataset uses exposure at discharge
+analytical <- analytical %>%
+  mutate(data = map(data, ~.x %>%
+                      mutate(
+                        # reproduce original analysis: constant exposure, SES at baseline (discharge)
+                        exposure = DCIQuintile_Dis,
+                      )
+  ))
+
 analytical <- bind_rows(analytical, analytical2)
 rm(analytical2)
+
+# Relevel dataset factor in semantic order
+analytical <- analytical %>%
+  mutate(
+    dataset = factor(dataset),
+    dataset = fct_shift(dataset, n = 3),
+  )
 
 # # inclusion criteria: 10yr follow up + unique IDs
 # Nobs_incl_id <- analytical %>% nrow()
@@ -96,7 +133,7 @@ analytical <- analytical %>%
 # inclusion criteria: valid times
 analytical <- analytical %>%
   mutate(data = map(data, ~.x %>%
-  filter(Time>0)
+  filter(Time>=0)
   ))
 
 # # remove invalid observations (outcome at time 0 or below)
@@ -109,7 +146,7 @@ analytical <- analytical %>%
   mutate(
     id = as.character(id), # or as.factor
     # label SES quintiles
-    # exposure = factor(exposure, labels = c("Prosperous", "Comfortable", "Mid-Tier", "At-Risk", "Distressed")),
+    exposure = factor(exposure, labels = c("Prosperous", "Comfortable", "Mid-Tier", "At-Risk", "Distressed")),
     across(starts_with("exposure"), ~ factor(.x, labels = c("Prosperous", "Comfortable", "Mid-Tier", "At-Risk", "Distressed"))),
     # convert Time to years
     Time = Time/dyears(1),
@@ -197,13 +234,15 @@ analytical <- analytical %>%
     -starts_with("DCI"),
     -where(is.Date),
     -IntStatus,
-    -FollowUpPeriod,
+    # -FollowUpPeriod,
     # -Time_d,
+    # -FIMMOTF,
+    # -FIMCOGF,
   )
   ))
 
-# Nvar_final <- analytical %>% ncol
-# Nobs_final <- analytical %>% nrow
+Nvar_final <- analytical %>% unnest(analytical) %>% ungroup() %>% filter(dataset=="sing_cc") %>% select(-dataset) %>% ncol
+Nobs_final <- analytical %>% unnest(analytical) %>% ungroup() %>% filter(dataset=="sing_cc") %>% select(-dataset) %>% nrow
 
 # mockup of analytical dataset for SAP and public SAR
 analytical_mockup <- tibble( id = c( "1", "2", "3", "...", "N") ) %>%
@@ -217,6 +256,11 @@ analytical_mockup <- tibble( id = c( "1", "2", "3", "...", "N") ) %>%
 analytical <- analytical %>%
   mutate(md = map(analytical, ~
                     .x %>%
-                    select(-c(PriorSeiz, exposure_Inj, exposure_Dis, exposure_last)) %>%
+                    select(
+                      -PriorSeiz,
+                      # -exposure_Inj,
+                      # -exposure_Dis,
+                      # -exposure_last,
+                    ) %>%
                     drop_na()
   ))
