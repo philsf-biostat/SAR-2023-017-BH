@@ -5,8 +5,7 @@ library(tidyverse)
 # library(readxl)
 # library(haven)
 # library(foreign)
-library(lubridate)
-# library(naniar)
+library(naniar)
 library(labelled)
 
 study_period <- c("2010-01-01", "2018-12-31") %>%
@@ -79,6 +78,7 @@ analytical[1:3, 1] <- str_c("sing_", pull(analytical[1:3, 1]))
 analytical2[1:3, 1] <- str_c("mult_", pull(analytical2[1:3, 1]))
 
 # exclusion criteria: redundant participant observations: pick last date of follow up
+# defined only in single obs datasets
 analytical <- analytical %>%
   mutate(data = map(data, ~.x %>%
   group_by(id) %>%
@@ -97,6 +97,7 @@ analytical <- analytical %>%
                       )
   ))
 
+# merge both single+multiple obs datasets into single object
 analytical <- bind_rows(analytical, analytical2)
 rm(analytical2)
 

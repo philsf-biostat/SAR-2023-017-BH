@@ -6,7 +6,6 @@ library(readxl)
 library(haven)
 # library(foreign)
 library(naniar)
-library(lubridate)
 library(labelled)
 
 demographics <- c(
@@ -131,14 +130,20 @@ cc <- cc %>%
 
 # prepare base dataset ----------------------------------------------------
 
-# This section will break the orig data into 4 datasets
-# - data with consecutive followup, for location data (cc, and its siblings)
-# - date of death, with follow indicator (Deaths)
-# - participant constant data (d)
-# - individuals with no followup identifiers (lost)
-# data.raw will be reconstructed from multiple datasets that undergone different imputation procedures with the previous structure
+# The following sections will break the orig data into long-format datasets
+# In order to reshape into long-format, we spread all time-varying variables then collapse into a single one.
+# This is required because the orig data has follow-up in long-format, and baseline (discharge) in wide-format
+# The resulting long-format data will be treated as:
+# - Zip will be imputed
+# - DCI will be joined onto Zip
+# - Date, Time, outcome will be calculated
+# - exposure will be defined as one DCI variable
 
-# prepare colnames for wrangling operations
+# data.raw will be constructed from multiple datasets that undergone different imputation procedures with the previous structure
+# Each imputation will be stored into separate tables within a nested dataframe
+# that allows one to apply functions to all datasets in functional prog form
+
+# prepare standardized colnames for wrangling operations
 cc <- cc %>%
   # standard naming convention
   rename(Date_Inj = Injury, Zip_Inj = ZipInj, Date_Dis = RehabDis, Zip_Dis = ZipDis, Zip = ZipF) %>%
@@ -166,7 +171,7 @@ cc <- cc %>%
                                                            )) %>% # side-effect: creates Date_NA, Zip_NA, etc
   select(-ends_with("NA")) %>% # drop Date_NA, Zip_NA, ...
   mutate(across(starts_with("Zip"), as.character)) %>% # remove labels from Zip vars (required to match coltypes when pivoting to long format)
-  # collapse all 3 variables (Date, Zip, IntStatus)
+  # collapse all time-varying variables (Date, Zip, IntStatus, etc)
   pivot_longer(cols = starts_with(c("Date_", "Zip_", "IntStatus_" # time-varying
                                     , "outcome_" # is time-varying, but not yet defined at follow-up time points
                                     # , "Time_" # will be time-varying, but not created yet
@@ -179,15 +184,13 @@ cc <- cc %>%
   mutate(
     # status at followup Date
     outcome = as.numeric(!is.na(DeathF)), # 0=alive, 1=dead
-    # time to event (in days)
+    # time to event
     Time = as.duration(interval(RehabDis, Date)),
-    # Time = Time_d/dyears(1),
-    # .after = DeathF,
   )
 
 # sort observations by FollowUpPeriod
 cc <- cc %>%
-  # temporary fix for FollowUpPeriod: set numeric for ordering before imputation
+  # FollowUpPeriod: define Dis = 0, Inj = -1
   mutate(
     FollowUpPeriod = str_replace(FollowUpPeriod, "Dis", "0"),
     FollowUpPeriod = str_replace(FollowUpPeriod, "Inj", "-1"),
@@ -235,7 +238,7 @@ data.raw <- data.raw %>%
                       )
   ))
 
-# restore original structure ----------------------------------------------
+# validation: test subjects -----------------------------------------------
 
 # test: 13446 benefits from locf, outcome 1 at follow up 15
 data.raw %>%
