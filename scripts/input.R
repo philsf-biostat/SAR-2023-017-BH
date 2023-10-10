@@ -29,14 +29,8 @@ analytical <- analytical %>%
   ) %>%
   rename(
     id = Mod1id,
-    # # last known location at each follow_up: original analysis uses SES at baseline (discharge)
-    # exposure_last = exposure,
   ) %>%
   mutate(
-    # Date = Followup,
-    # # reproduce original analysis: constant exposure, SES at baseline (discharge)
-    # exposure = exposure_Dis,
-    # new data: time-varying exposure
   ) %>%
   filter(
   )
@@ -81,14 +75,6 @@ analytical2 <- analytical
 # rename datasets
 analytical[1:3, 1] <- str_c("sing_", pull(analytical[1:3, 1]))
 analytical2[1:3, 1] <- str_c("mult_", pull(analytical2[1:3, 1]))
-
-# # use time-varying SES in mult_*
-# analytical2 <- analytical2 %>%
-#   mutate(data = map(data, ~.x %>%
-#                       mutate(
-#                         exposure = exposure_last,
-#                       )
-#   ))
 
 # exclusion criteria: redundant participant observations: pick last date of follow up
 analytical <- analytical %>%
