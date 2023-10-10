@@ -24,15 +24,27 @@ theme_gtsummary_compact()
 # cohens_d(outcome ~ exposure, data = analytical) %>% interpret_cohens_d()
 # interpret_icc(0.7)
 
+analytical %>% unnest(data) %>% select(exposure) %>% miss_var_summary()
+
+analytical %>% unnest(analytical) %>% distinct(id) %>% count()
+
+lost <- analytical %>% unnest(md) %>% distinct(id) %>% summarise(n = n()-7409)
+
 # tables ------------------------------------------------------------------
 
-tab_desc <- analytical %>%
-  tbl_summary(
-    include = -id,
-    # by = exposure,
-  ) %>%
-  # modify_caption(caption = "**Tabela 1** Características demográficas") %>%
-  # modify_header(label ~ "**Características dos pacientes**") %>%
-  # pretty format categorical variables
-  bold_labels() %>%
-  modify_table_styling(columns = "label", align = "center")
+sing <- "Single observation per individual"
+mult <- "Multiple observations per individual"
+cc <- "CC = complete-cases (not imputed)"
+locf <- "LOCF = last observation carried forward"
+nocb <- "NOCB = next observation carried backward"
+
+# table is constructed in tables-save and loaded here
+tab_desc <- read_rds("dataset/tab_desc_017.rds")
+
+# number of deaths
+deaths <- analytical %>%
+  unnest(md) %>%
+  filter(outcome==1) %>%
+  count(outcome) %>%
+  select(-outcome) %>%
+  ungroup()
