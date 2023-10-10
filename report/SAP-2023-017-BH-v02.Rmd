@@ -1,8 +1,8 @@
 ---
 title: "Analytical Plan for [title]"
-subtitle: 'DOCUMENT: SAP-2023-017-BH-v01'
+subtitle: 'DOCUMENT: SAP-2023-017-BH-v02'
 author: '**From:** Felipe Figueiredo **To:** ___'
-date: "2023-04-25"
+date: "2023-07-19"
 output:
   html_document:
     fig_caption: yes
@@ -23,7 +23,15 @@ output:
 # toc-title: "Sumário"
 ---
 
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+options(scipen = 999)
+library(pander)
+library(knitr)
+panderOptions('table.style', 'rmarkdown')
+panderOptions('table.split.table', 160)
+```
 
 ---
 
@@ -33,12 +41,18 @@ output:
 
 **Document version**
 
+```{r history}
+Version <- c("01", "02")
+Changes <- c("Initial version", "added full datasets for time-varying SES values")
+history <- cbind(Version, Changes)
+colnames(history) <- c("Version", "Alterations")
+# pander(history, split.cells = 70)
+kable(history)
+```
 
-|Version |Alterations     |
-|:-------|:---------------|
-|01      |Initial version |
-
-
+```{r cleaning, include=FALSE}
+source("scripts/input.R", encoding = 'UTF-8')
+```
 
 ---
 
@@ -66,16 +80,16 @@ output:
 ## Raw data
 
 The original data base had
-33
+`r Nvar_orig`
 variables collected on
-0
+`r Nobs_orig`
 observations.
 
 <!-- Upon study start the raw data will be collected in a raw table, that will be processed before analysis. -->
 <!-- The raw dataset to be collected will have -->
-<!-- 33 -->
+<!-- `r Nvar_orig` -->
 <!-- variables collected on -->
-<!-- 0 -->
+<!-- `r Nobs_orig` -->
 <!-- observations. -->
 
 <!-- This dataset will include the dates of entry and exit of the cohort, or the date of hospital admission and the date where the endpoint was reached (either an event, or hospital discharge). -->
@@ -111,27 +125,21 @@ observations.
 ## Analytical dataset
 
 <!-- After the cleaning process -->
-<!-- 24 -->
+<!-- `r Nvar_final` -->
 <!-- variables were included in the analysis -->
 <!-- with -->
-<!-- 7978 -->
+<!-- `r Nobs_final` -->
 <!-- observations. -->
 After the cleaning process
-24
+`r Nvar_final`
 variables were included in the analysis.
 The total number of observations excluded due to incompleteness and exclusion criteria will be reported in the analysis.
 Table 1 shows the structure of the analytical dataset.
 
-
-| id  | exposure | outcome | Time | SexF | Race | Mar | AGE | PROBLEMUse | EDUCATION | EMPLOYMENT | RURALdc | PriorSeiz | SCI | Cause | RehabPay1 | ResDis | DAYStoREHABdc | FIMMOTD | FIMCOGD | FollowUpPeriod | FIMMOTD4 | FIMCOGD4 |
-|:---:|:--------:|:-------:|:----:|:----:|:----:|:---:|:---:|:----------:|:---------:|:----------:|:-------:|:---------:|:---:|:-----:|:---------:|:------:|:-------------:|:-------:|:-------:|:--------------:|:--------:|:--------:|
-|  1  |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-|  2  |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-|  3  |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-| ... |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-|  N  |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-
-Table: **Table 1** Analytical dataset structure after variable selection and cleaning.
+```{r analytical data}
+analytical_mockup %>%
+  pander(caption = "**Table 1** Analytical dataset structure after variable selection and cleaning.", split.table = Inf)
+```
 
 All variables in the analytical set were labeled according to the raw data provided and values were labeled according to the data dictionary for the preparation of production-quality results tables and figures.
 
@@ -210,7 +218,7 @@ N/A
 
 ## Statistical packages
 
-This analysis will be performed using statistical software `R` version 4.3.0.
+This analysis will be performed using statistical software `R` version `r getRversion()`.
 
 # Observations and limitations
 
