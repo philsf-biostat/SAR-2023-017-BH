@@ -1,7 +1,7 @@
 ---
-title: "[title]"
+title: "Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study"
 subtitle: 'DOCUMENT: SAR-2023-017-BH-v01'
-author: '**From:** Felipe Figueiredo **To:** ___'
+author: '**From:** Felipe Figueiredo **To:** Brennan Hickson'
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -37,7 +37,7 @@ panderOptions('table.split.table', 160)
 
 \newpage
 
-**[title]**
+**Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study**
 
 **Document version**
 
@@ -88,6 +88,9 @@ This analysis was performed using statistical software `R` version `r getRversio
 
 ## Study population and follow up
 
+- no changes to the id pool
+- slight shift in SES props, but similar overall (also, still homogeneously distributed)
+
 ```{r tab_desc}
 tab_desc %>%
   as_kable(              # only for markdown
@@ -103,7 +106,29 @@ tab_desc %>%
 # knitr::include_graphics("../figures/outcome.png", error = FALSE)
 ```
 
+After dropping incomplete cases (data available to the model)
+
+- few individuals lost after complete-cases deletion
+<!-- ("lost" data frame) -->
+- Single: all Single datasets are equal
+- multiple:: most deaths are dropped in multiple CC (ZIP not recorded -> no SES)
+- multiple: LOCF is equal to LOCF+NOCB
+- single death added
+
+```{r}
+deaths %>%
+  kable(
+  # gt(
+    caption = "**Table 2** Number of death events available to models in each dataset"
+  )
+```
+
 ## Inferential analysis
+
+- FIMCOG4 is included in single CC (table 4)
+- FIMMOTD4 and FIMCOG4 are included in multiple LOCF
+- Days to rehab is included in multiple LOCF
+- multiple: time-varying exposure is associated with the outcome up to model 5 (clinical+FIM scores)
 
 ```{r tab_inf}
 tab_inf %>%
@@ -111,9 +136,18 @@ tab_inf %>%
   # as_flex_table(       # only for DOCX
   # ) %>%
   # flextable::set_caption(
-    caption = "**Table 2** caption"
+    caption = "**Table 3** caption"
   )
 ```
+
+```{r}
+sch.df %>%
+  kable(
+  # gt(
+    caption = "**Table 4** caption"
+  )
+```
+
 
 # Observations and Limitations
 
@@ -121,7 +155,7 @@ tab_inf %>%
 
 # References
 
-- **SAP-2023-017-BH-v01** -- Analytical Plan for [title]
+- **SAP-2023-017-BH-v02** -- Analytical Plan for Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study
 
 # Appendix
 
@@ -167,7 +201,7 @@ Table A1 shows the structure of the analytical dataset.
 
 ```{r data}
 analytical_mockup %>%
-  pander(caption = "**Table A1** Analytical dataset structure")
+  pander(caption = "**Table A1** Analytical dataset structure", split.table = Inf)
 ```
 
 Due to confidentiality the data-set used in this analysis cannot be shared online in the public version of this report.

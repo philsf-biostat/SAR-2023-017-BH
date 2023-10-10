@@ -2,7 +2,7 @@
 title: "Analytical Plan for [title]"
 subtitle: 'DOCUMENT: SAP-2023-017-BH-v01'
 author: '**From:** Felipe Figueiredo **To:** ___'
-date: "`r Sys.Date()`"
+date: "2023-04-25"
 output:
   html_document:
     fig_caption: yes
@@ -138,7 +138,7 @@ Table 1 shows the structure of the analytical dataset.
 
 ```{r analytical data}
 analytical_mockup %>%
-  pander(caption = "**Table 1** Analytical dataset structure after variable selection and cleaning.")
+  pander(caption = "**Table 1** Analytical dataset structure after variable selection and cleaning.", split.table = Inf)
 ```
 
 All variables in the analytical set were labeled according to the raw data provided and values were labeled according to the data dictionary for the preparation of production-quality results tables and figures.
@@ -213,32 +213,6 @@ two-tailed.
 <!-- right-tailed. -->
 
 ## Study size and Power
-
-```{r}
-n <- analytical %>%
-  count(exposure) %>%
-  pull(n)
-n1 <- n[1]
-n2 <- n[2]
-total <- sum(n)
-d <- pwr::pwr.t2n.test(n1 = n1, n2 = n2, power = .8, sig.level = .05)$d %>%
-  format.float()
-d <- pwr::pwr.t.test(n = total/2, power = .8, sig.level = .05)$d %>%
-  format.float()
-```
-
-<!-- Study groups were balanced and the total sample size was `r total` including all groups. -->
-
-<!-- Study groups were not balanced with -->
-<!-- group1 with `r n1` participants -->
-<!-- and -->
-<!-- group2 with `r n2` participants -->
-<!-- with a total study size of `r total`. -->
-<!-- This power analysis adjusts for different group sizes. -->
-
-<!-- With these group sizes a t test can detect an effect size as large as -->
-<!-- **d = `r d`** -->
-<!-- with 80% power and 5% significance level (Cohen, 1988). -->
 
 N/A
 
