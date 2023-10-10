@@ -77,7 +77,9 @@ cc <- read_sav("dataset/Form1_20221017.sav") %>%
   select(any_of(c(demographics, clinical))) # reduce amount of data collected
 
 # Original N of individuals
-# Nobs_orig_id <- data.raw %>% distinct(Mod1id) %>% nrow()
+Nid_orig <- cc %>% distinct(Mod1id) %>% nrow()
+Nobs_orig <- cc %>% nrow()
+Nvar_orig <- cc %>% ncol()
 
 # save var labels before processing
 labs <- cc %>% var_label()
@@ -273,5 +275,8 @@ data.raw <- data.raw %>%
 
 # data saving -------------------------------------------------------------
 
-# save(data.raw, Nobs_orig, Nvar_orig, Nobs_orig_id, demographics, clinical, file = "dataset/brennan_data_17.rds")
+# save meta data
+save(Nobs_orig, Nvar_orig, Nid_orig, demographics, clinical, file = "dataset/brennan_metadata.rds")
+
+# save data
 write_rds(data.raw, "dataset/brennan_data_17.rds")

@@ -16,6 +16,8 @@ study_period <- c("2010-01-01", "2018-12-31") %>%
 set.seed(42)
 analytical <- read_rds("dataset/brennan_data_17.rds")
 
+# Nobs_orig, Nvar_orig, Nid_orig
+load("dataset/brennan_metadata.rds")
 
 # save labels before processing
 labs <- var_label(analytical$data[[1]])
