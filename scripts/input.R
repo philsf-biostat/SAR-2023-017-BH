@@ -17,6 +17,8 @@ analytical <- read_rds("dataset/brennan_data_17.rds")
 
 # Nobs_orig, Nvar_orig, Nid_orig
 load("dataset/brennan_metadata.rds")
+# original NVar *before* all manipulations in 017
+Nvar_orig <- 711
 
 # save labels before processing
 labs <- var_label(analytical$data[[1]])
