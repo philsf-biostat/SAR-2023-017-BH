@@ -1,6 +1,6 @@
 ---
 title: 'Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study'
-date: ""
+date: "2023-12-18"
 permalink: /portfolio/SAR-2023-017/
 redirect_from:
   - /portfolio/SAR-2023-017-BH/
