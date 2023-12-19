@@ -58,6 +58,16 @@ source("scripts/results.R", encoding = 'UTF-8')
 
 # Abbreviations
 
+- FIM: Functional Independence Measure
+- CI: confidence interval
+- DCI: Distress community index
+- HR: hazards ratio
+- LOCF: Last observation carried forward
+- NOCB: Next observation carried backward
+- SD: standard deviation
+- SES: socioeconomic status
+- TBI: Traumatic brain injury
+
 # Context
 
 ## Objectives
@@ -164,6 +174,11 @@ sch.df %>%
 
 # Observations and Limitations
 
+**Recommended reporting guideline**
+
+The adoption of the EQUATOR network (<http://www.equator-network.org/>) reporting guidelines have seen increasing adoption by scientific journals.
+All observational studies are recommended to be reported following the STROBE guideline (von Elm et al, 2014).
+
 # Conclusions
 
 Simple imputation on zip codes do not extend the range of observations available for modeling in this dataset when using a single observation per individual.
@@ -176,6 +191,7 @@ When using multiple observations per individual in the model specification evalu
 
 - **SAP-2023-017-BH-v02** -- Analytical Plan for Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study
 - **SAP-2023-016-BH-v02** -- Analytical Plan for Time-adjusted effect of socioeconomic status in mortality rates after brain injury: cohort study
+- von Elm E, Altman DG, Egger M, Pocock SJ, Gøtzsche PC, Vandenbroucke JP; STROBE Initiative. The Strengthening the Reporting of Observational Studies in Epidemiology (STROBE) Statement: guidelines for reporting observational studies. Int J Surg. 2014 Dec;12(12):1495-9 (<https://doi.org/10.1016/j.ijsu.2014.07.013>).
 
 # Appendix
 
