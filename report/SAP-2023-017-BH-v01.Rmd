@@ -58,16 +58,15 @@ source("scripts/input.R", encoding = 'UTF-8')
 
 # Abbreviations
 
-- BMI: body mass index
+- FIM: Functional Independence Measure
 - CI: confidence interval
-- CV: coefficient of variation
-- d: Cohen's D effect size
+- DCI: Distress community index
 - HR: hazards ratio
-- IQR: interquartile range
-- IRR: incidence rate ratio
-- OR: odds ratio
-- RR: risks ratio
+- LOCF: Last observation carried forward
+- NOCB: Next observation carried backward
 - SD: standard deviation
+- SES: socioeconomic status
+- TBI: Traumatic brain injury
 
 # Context
 
