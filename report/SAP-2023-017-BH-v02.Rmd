@@ -277,6 +277,7 @@ All observational studies are recommended to be reported following the STROBE gu
 # References
 
 - **SAR-2023-017-BH-v01** -- Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study
+- **SAR-2023-016-BH** -- Time-adjusted effect of socioeconomic status in mortality rates after brain injury: cohort study
 <!-- - Cohen, J. (1988). Statistical power analysis for the behavioral sciences (2nd Ed.). New York: Routledge. -->
 - Zarin DA, et al. The ClinicalTrials.gov results database -- update and key issues. N Engl J Med 2011;364:852-60 (<https://doi.org/10.1056/NEJMsa1012065>).
 - Gamble C, et al. Guidelines for the Content of Statistical Analysis Plans in Clinical Trials. JAMA. 2017;318(23):2337–2343 (<https://doi.org/10.1001/jama.2017.18556>).
