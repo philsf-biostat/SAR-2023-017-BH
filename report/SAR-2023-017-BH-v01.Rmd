@@ -2,7 +2,7 @@
 title: "Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study"
 subtitle: 'DOCUMENT: SAR-2023-017-BH-v01'
 author: '**From:** Felipe Figueiredo **To:** Brennan Hickson'
-date: "`r Sys.Date()`"
+date: "2023-12-18"
 output:
   html_document:
     fig_caption: yes
@@ -86,7 +86,7 @@ This analysis was performed using statistical software `R` version `r getRversio
 
 # Results
 
-## Study population and follow up
+## Missing values in the original dataset
 
 - no changes to the id pool
 - slight shift in SES props, but similar overall (also, still homogeneously distributed)
