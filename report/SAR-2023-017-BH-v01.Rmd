@@ -181,11 +181,14 @@ All observational studies are recommended to be reported following the STROBE gu
 
 # Conclusions
 
-Simple imputation on zip codes do not extend the range of observations available for modeling in this dataset when using a single observation per individual.
+Simple imputation on zip codes do not affect the range of observations available for modeling in this dataset when using a single observation per individual.
+The model specification tested is robust to imputation approaches on this dataset and the resulting exposure variable is unchanged.
 
 When using multiple observations per individual, there is a minute increment in the number of events, but there is different imputation approaches do not yield different datasets.
+The model specification tested is robust to imputation approaches on this dataset and the resulting exposure variable is unchanged.
 
 When using multiple observations per individual in the model specification evaluated, the time-varying exposure allows for the inclusion of terms that violated the proportional hazards assumption in the constant exposure.
+The model specification tested is sensitive to using a time-varying exposure and all terms can be used for analysis.
 
 # References
 
