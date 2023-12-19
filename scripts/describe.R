@@ -48,3 +48,29 @@ deaths <- analytical %>%
   count(outcome) %>%
   select(-outcome) %>%
   ungroup()
+
+# validation of datasets --------------------------------------------------
+
+# single
+all.equal(
+  analytical %>% ungroup() %>% filter(dataset=="sing_cc") %>% select(md) %>% unnest(md),
+  analytical %>% ungroup() %>% filter(dataset=="sing_locf") %>% select(md) %>% unnest(md)
+)
+
+all.equal(
+  analytical %>% ungroup() %>% filter(dataset=="sing_cc") %>% select(md) %>% unnest(md),
+  analytical %>% ungroup() %>% filter(dataset=="sing_locf+nocb") %>% select(md) %>% unnest(md)
+)
+
+# multiple
+# all.equal(
+#   analytical %>% ungroup() %>% filter(dataset=="mult_cc") %>% select(md) %>% unnest(md) %>% select(exposure),
+#   analytical %>% ungroup() %>% filter(dataset=="mult_locf") %>% select(md) %>% unnest(md) %>% select(exposure)
+# )
+
+all.equal(
+  analytical %>% ungroup() %>% filter(dataset=="mult_locf") %>% select(md) %>% unnest(md) %>% select(exposure),
+  analytical %>% ungroup() %>% filter(dataset=="mult_locf+nocb") %>% select(md) %>% unnest(md) %>% select(exposure)
+)
+
+
