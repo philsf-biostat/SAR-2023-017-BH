@@ -99,7 +99,7 @@ tab_desc %>%
   # as_flex_table(       # only for DOCX
   # ) %>%
   # flextable::set_caption(
-    caption = "**Table 1** caption"
+    caption = "**Table 1** Distribution of variables in the data under various imputation approaches."
   )
 ```
 
@@ -140,7 +140,7 @@ tab_inf %>%
   # as_flex_table(       # only for DOCX
   # ) %>%
   # flextable::set_caption(
-    caption = "**Table 3** caption"
+    caption = "**Table 3** Model coefficients for both datasets."
   )
 ```
 
@@ -153,7 +153,7 @@ Table 4 shows the p-values of the Schoenfeld test for the model tested on both d
 sch.df %>%
   kable(
   # gt(
-    caption = "**Table 4** caption"
+    caption = "**Table 4** Schoenfeld test for both datasets."
   )
 ```
 
