@@ -131,10 +131,8 @@ For simplicity, we will consider the complete case dataset for the first case an
 
 ## Sensitivity of proportional hazards violations under different dataset regimens
 
-- FIMCOG4 is included in single CC (table 4)
-- FIMMOTD4 and FIMCOG4 are included in multiple LOCF
-- Days to rehab is included in multiple LOCF
-- multiple: time-varying exposure is associated with the outcome up to model 5 (clinical+FIM scores)
+Table 3 shows the results of the model specification from **SAP-2023-016-BH-v02** on both datasets available from the previous section.
+The same model specification was tested with both datasets.
 
 ```{r tab_inf}
 tab_inf %>%
@@ -145,6 +143,11 @@ tab_inf %>%
     caption = "**Table 3** caption"
   )
 ```
+
+Using the dataset that provides a single observation per individual the residual analysis of **SAR-2023-016-BH** is reproduced, where the FIM motor score is dropped due to a violation of the proportional hazards assumption.
+The dataset that provides multiple observations per individual imputed with a LOCF approach does not violate that assumption, so the term can be safely kept for the analysis.
+Additionally, when the SES exposure is the time-varying it is associated with mortality under the final model specification, whereas in the smaller dataset this was only true without including any of the FIM scores.
+Table 4 shows the p-values of the Schoenfeld test for the model tested on both datasets.
 
 ```{r}
 sch.df %>%
@@ -162,6 +165,7 @@ sch.df %>%
 # References
 
 - **SAP-2023-017-BH-v02** -- Analytical Plan for Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study
+- **SAP-2023-016-BH-v02** -- Analytical Plan for Time-adjusted effect of socioeconomic status in mortality rates after brain injury: cohort study
 
 # Appendix
 
