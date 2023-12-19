@@ -1,8 +1,8 @@
 ---
-title: "Analytical Plan for [title]"
+title: "Analytical Plan for Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study"
 subtitle: 'DOCUMENT: SAP-2023-017-BH-v01'
-author: '**From:** Felipe Figueiredo **To:** ___'
-date: "`r Sys.Date()`"
+author: '**From:** Felipe Figueiredo **To:** Brennan Hickson'
+date: "2023-04-25"
 output:
   html_document:
     fig_caption: yes
@@ -37,7 +37,7 @@ panderOptions('table.split.table', 160)
 
 \newpage
 
-**Analytical Plan for [title]**
+**Analytical Plan for Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study**
 
 **Document version**
 
@@ -58,71 +58,54 @@ source("scripts/input.R", encoding = 'UTF-8')
 
 # Abbreviations
 
-- BMI: body mass index
+- FIM: Functional Independence Measure
 - CI: confidence interval
-- CV: coefficient of variation
-- d: Cohen's D effect size
+- DCI: Distress community index
 - HR: hazards ratio
-- IQR: interquartile range
-- IRR: incidence rate ratio
-- OR: odds ratio
-- RR: risks ratio
+- LOCF: Last observation carried forward
+- NOCB: Next observation carried backward
 - SD: standard deviation
+- SES: socioeconomic status
+- TBI: Traumatic brain injury
 
 # Context
 
 ## Objectives
 
+1. To describe the missingness in zip codes at each follow up collection;
+1. To impute missing Zip codes with data available in previous follow up collections.
+1. To assess the sensitivity of the association between mortality and socioeconomic status to the imputation of participant missing location.
+
 ## Hypotheses
+
+Imputing the missing zip codes will decrease the missingness in the dataset and improve the model fit.
 
 # Data
 
 ## Raw data
 
-The original data base had
+The raw data table was created by merging the TBI database with the DCI table, using the Zip codes as merging key.
+The raw data base had
 `r Nvar_orig`
-variables collected on
-`r Nobs_orig`
-observations.
+variables collected with
+`r Nobs_orig %>% gtsummary::style_number()`
+observations from
+`r Nid_orig %>% gtsummary::style_number()`
+individuals.
 
-<!-- Upon study start the raw data will be collected in a raw table, that will be processed before analysis. -->
-<!-- The raw dataset to be collected will have -->
-<!-- `r Nvar_orig` -->
-<!-- variables collected on -->
-<!-- `r Nobs_orig` -->
-<!-- observations. -->
-
-<!-- This dataset will include the dates of entry and exit of the cohort, or the date of hospital admission and the date where the endpoint was reached (either an event, or hospital discharge). -->
-<!-- Table 1 shows the structure of the raw dataset. -->
-
-<!-- ```{r analytical data} -->
-<!-- analytical_mockup %>% -->
-<!--   pander(caption = "**Table 1** Raw dataset structure.") -->
-<!-- ``` -->
-
-<!-- Each row represents all information collected from each study participant, and each participant included will require a unique study ID. -->
-<!-- The outcome should be recorded as a binary variable: either the study participant reached the endpoint -->
-<!-- ([outcome]) -->
-<!-- or reached the end of study period without experiencing the event. -->
-<!-- This information can be recorded in either text form (eg, yes/no), or an indicator -->
-<!-- ([outcome] = 1, -->
-<!-- end of observation time or discharge = 0). -->
-<!-- Exposure and all comorbidities should be recorded as binary variables, whenever possible. -->
-<!-- All comorbidities should be recorded as binary variables, whenever possible. -->
-
-<!-- Surgery length should be recorded in -->
-<!-- minutes, -->
-<!-- hours, -->
-<!-- and ICU length in -->
-<!-- days. -->
-<!-- weeks. -->
-<!-- months. -->
-
-<!-- Surgery type will be recorded as a categorical variable. -->
-<!-- It is recommended that the number of classes (types of surgery) be as small as possible, to avoid loss of precision in the analysis estimates, without the need to increase the sample size. -->
-<!-- Broader categories of surgeries should be preferred, whenever possible. -->
+From the raw table, multiple analytical datasets will be created by applying various imputation methods to the Zip code values.
+The creation of the analytical datasets is described in the next section and the imputation procedures are described in section 5.1.4.
 
 ## Analytical dataset
+
+Many datasets will be created for this sensitivity analysis, and the many-datasets approach will be used to apply the statistical model (defined in section 5.1.3) to each dataset so that a sensitivity analysis can be performed.
+The datasets created under this approach will be created in steps, and stored in a single object to which specific code instructions can be applied to all datasets in a single command.
+This approach will allow for the simultaneous application of the following instructions to all datasets:
+
+1. all data cleaning procedures
+1. inclusion/exclusion criteria
+1. the statistical model selected for evaluation
+1. the calculation of model performance metrics
 
 <!-- After the cleaning process -->
 <!-- `r Nvar_final` -->
@@ -138,7 +121,7 @@ Table 1 shows the structure of the analytical dataset.
 
 ```{r analytical data}
 analytical_mockup %>%
-  pander(caption = "**Table 1** Analytical dataset structure after variable selection and cleaning.")
+  pander(caption = "**Table 1** Analytical dataset structure after variable selection and cleaning.", split.table = Inf)
 ```
 
 All variables in the analytical set were labeled according to the raw data provided and values were labeled according to the data dictionary for the preparation of production-quality results tables and figures.
@@ -147,22 +130,56 @@ All variables in the analytical set were labeled according to the raw data provi
 
 ## Study design
 
+This is a retrospective analysis of a prospective cohort study.
+
 ## Inclusion and exclusion criteria
 
+**Inclusion criteria**
+
+1. Participants with at most 10 years of follow up;
+1. Participants included in the cohort between 2010-01-01 and 2018-12-31;
+1. Only the last valid observation of each individual will be included in the analysis.
+
+**Exclusion criteria**
+
+1. Observations after 2019-12-31 will be excluded in order to mitigate risk of confounding by COVID-19 related deaths.
+1. Observations prior to this date will still be considered for participants where such data is available.
+
 ## Exposures
+
+SES of the neighborhood to which the participant was discharged.
+The SES measure was stratified into its quintiles, and labelled according to the data dictionary to facilitate interpretation of the results.
 
 ## Outcomes
 
 **Specification of outcome measures** (Zarin, 2011):
 
-1. (Domain)
-2. (Specific measurement)
-3. (Specific metric)
-4. (Method of aggregation)
+1. (Domain) Mortality
+2. (Specific measurement) Death
+3. (Specific metric) Time-to-event
+4. (Method of aggregation) Hazard ratio
 
 **Primary outcome**
 
+Death after a brain injury.
+
 ## Covariates
+
+- Sex
+- Race
+- Age at injury
+- Substance Problem Use
+- Education
+- Employment status
+- Rural area
+- Previous seizure disorder diagnosis
+- Spinal cord injury
+- Cause of injury
+- Primary rehabilitation payer
+- Residence after rehab discharge
+- Days From Injury to Rehab Discharge
+- FIM Motor at Discharge
+- FIM Cognitive at Discharge
 
 # Statistical methods
 
@@ -172,37 +189,35 @@ All variables in the analytical set were labeled according to the raw data provi
 
 The epidemiological profile of the study participants will be described.
 Demographic
-(sex, age and BMI)
 and clinical variables
-<!-- ( [vars] ) -->
 will be described as
 mean (SD)
-<!-- median (IQR) -->
 or as counts and proportions (%), as appropriate.
 The distributions of participants' characteristics will be summarized in tables and visualized in exploratory plots.
 
 ### Inferential analyses
 
-All comparisons between groups will be performed as univariate analyses.
-Continuous variables will be compared between groups with the
-independent t test with Welch correction.
-<!-- paired t test. -->
-<!-- Mann-Whitney test. -->
-<!-- signed rank Wilcoxon test. -->
-Differences in distribution of categorical variables will be assessed with the
-Fisher exact test.
-<!-- chi-square test. -->
-<!-- McNemar test. -->
-
-<!-- All inferential analyses will be performed in the statistical models (described in the next section). -->
+All inferential analyses will be performed in the statistical models (described in the next section).
 
 ### Statistical modeling
 
+This analysis will evaluate the sensitivity to the model specification chosen in **SAR-2023-016-BH** to changes in the SES data (defined as the exposure of that analysis).
+The model specification used for the sensitivity analysis will be the best model selected in that associated report.
+
+For reference, the specification defined there regresses the hazard on the SES controlling for all covariates listed in section 4.5, except "previous seizure".
+
+<!-- $$HR \sim exposure + Sex + Race + AGE + EDUCATION + -->
+<!--   EMPLOYMENT + ResDis + RURALdc + RehabPay1 + SCI + PROBLEMUse + -->
+<!--   FIMMOTD4 + FIMCOGD4$$ -->
+
+This model specification will be applied on all datasets created from the imputation approaches described in section 5.1.4, and the Schoenfeld test will be applied to verify the proportional hazards assumption on all model terms.
+
 ### Missing data
 
-No missing data imputation will be performed.
-All evaluations will be performed as complete case analyses.
-Missing data counts and proportions will be reported in tables.
+A couple of simple imputation approaches will be applied on missing values for Zip codes, before the DCI data is merged into the TBI database.
+An LOCF-based imputation will be applied to impute future Zip codes based on the last known value for each individual.
+An additional dataset will be created by applying both NOCB- and LOCF-based imputations on missing values, with the intention of increasing the proportion of location data before the DCI data is merged and inclusion/exclusion criteria are applied, in particular the criterion that selects only the last valid observation of the individual in the study period.
+The non-imputed complete case dataset will be used as the control for the evaluation of the LOCF and the NOCB+LOCF datasets.
 
 ## Significance and Confidence Intervals
 
@@ -213,32 +228,6 @@ two-tailed.
 <!-- right-tailed. -->
 
 ## Study size and Power
-
-```{r}
-n <- analytical %>%
-  count(exposure) %>%
-  pull(n)
-n1 <- n[1]
-n2 <- n[2]
-total <- sum(n)
-d <- pwr::pwr.t2n.test(n1 = n1, n2 = n2, power = .8, sig.level = .05)$d %>%
-  format.float()
-d <- pwr::pwr.t.test(n = total/2, power = .8, sig.level = .05)$d %>%
-  format.float()
-```
-
-<!-- Study groups were balanced and the total sample size was `r total` including all groups. -->
-
-<!-- Study groups were not balanced with -->
-<!-- group1 with `r n1` participants -->
-<!-- and -->
-<!-- group2 with `r n2` participants -->
-<!-- with a total study size of `r total`. -->
-<!-- This power analysis adjusts for different group sizes. -->
-
-<!-- With these group sizes a t test can detect an effect size as large as -->
-<!-- **d = `r d`** -->
-<!-- with 80% power and 5% significance level (Cohen, 1988). -->
 
 N/A
 
@@ -260,7 +249,8 @@ All observational studies are recommended to be reported following the STROBE gu
 
 # References
 
-- **SAR-2023-017-BH-v01** -- [title]
+- **SAR-2023-017-BH-v01** -- Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study
+- **SAR-2023-016-BH** -- Time-adjusted effect of socioeconomic status in mortality rates after brain injury: cohort study
 <!-- - Cohen, J. (1988). Statistical power analysis for the behavioral sciences (2nd Ed.). New York: Routledge. -->
 - Zarin DA, et al. The ClinicalTrials.gov results database -- update and key issues. N Engl J Med 2011;364:852-60 (<https://doi.org/10.1056/NEJMsa1012065>).
 - Gamble C, et al. Guidelines for the Content of Statistical Analysis Plans in Clinical Trials. JAMA. 2017;318(23):2337–2343 (<https://doi.org/10.1001/jama.2017.18556>).
@@ -293,10 +283,10 @@ The portfolio is available at:
 
 This analysis is part of a larger project and is supported by other analyses, linked below.
 
-**Effect of socioeconomic status in mortality rates after brain injury: retrospective cohort**
+**Effect of socioeconomic status in mortality rates after brain injury: cohort study**
 
 <https://philsf-biostat.github.io/SAR-2023-004-BH/>
 
-**Migration patterns in a cohort of individuals with brain injury in the US**
+**Time-adjusted effect of socioeconomic status in mortality rates after brain injury: cohort study**
 
 <https://philsf-biostat.github.io/SAR-2023-016-BH/>

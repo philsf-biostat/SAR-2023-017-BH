@@ -1,8 +1,8 @@
 ---
 title: "Analytical Plan for Sensitivity of mortality rates to the imputation of missing socioeconomic data: cohort study"
-subtitle: 'DOCUMENT: SAP-2023-017-BH-v01'
+subtitle: 'DOCUMENT: SAP-2023-017-BH-v02'
 author: '**From:** Felipe Figueiredo **To:** Brennan Hickson'
-date: "2023-04-25"
+date: "2023-07-19"
 output:
   html_document:
     fig_caption: yes
@@ -23,7 +23,15 @@ output:
 # toc-title: "Sumário"
 ---
 
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+options(scipen = 999)
+library(pander)
+library(knitr)
+panderOptions('table.style', 'rmarkdown')
+panderOptions('table.split.table', 160)
+```
 
 ---
 
@@ -33,12 +41,18 @@ output:
 
 **Document version**
 
+```{r history}
+Version <- c("01", "02")
+Changes <- c("Initial version", "added full datasets for time-varying SES values")
+history <- cbind(Version, Changes)
+colnames(history) <- c("Version", "Alterations")
+# pander(history, split.cells = 70)
+kable(history)
+```
 
-|Version |Alterations     |
-|:-------|:---------------|
-|01      |Initial version |
-
-
+```{r cleaning, include=FALSE}
+source("scripts/input.R", encoding = 'UTF-8')
+```
 
 ---
 
@@ -64,7 +78,8 @@ output:
 
 ## Hypotheses
 
-Imputing the missing zip codes will decrease the missingness in the dataset and improve the model fit.
+1. Imputing the missing zip codes will decrease the missingness in the dataset and improve the model fit.
+1. Switching to a time-varying covariates approach will allow for the addition of covariates that violated the proportional hazards assumption
 
 # Data
 
@@ -72,11 +87,11 @@ Imputing the missing zip codes will decrease the missingness in the dataset and 
 
 The raw data table was created by merging the TBI database with the DCI table, using the Zip codes as merging key.
 The raw data base had
-711
+`r Nvar_orig`
 variables collected with
-76,665
+`r Nobs_orig %>% gtsummary::style_number()`
 observations from
-19,303
+`r Nid_orig %>% gtsummary::style_number()`
 individuals.
 
 From the raw table, multiple analytical datasets will be created by applying various imputation methods to the Zip code values.
@@ -94,27 +109,21 @@ This approach will allow for the simultaneous application of the following instr
 1. the calculation of model performance metrics
 
 <!-- After the cleaning process -->
-<!-- 24 -->
+<!-- `r Nvar_final` -->
 <!-- variables were included in the analysis -->
 <!-- with -->
-<!-- 7978 -->
+<!-- `r Nobs_final` -->
 <!-- observations. -->
 After the cleaning process
-24
+`r Nvar_final`
 variables were included in the analysis.
 The total number of observations excluded due to incompleteness and exclusion criteria will be reported in the analysis.
 Table 1 shows the structure of the analytical dataset.
 
-
-| id  | exposure | outcome | Time | SexF | Race | Mar | AGE | PROBLEMUse | EDUCATION | EMPLOYMENT | RURALdc | PriorSeiz | SCI | Cause | RehabPay1 | ResDis | DAYStoREHABdc | FIMMOTD | FIMCOGD | FollowUpPeriod | FIMMOTD4 | FIMCOGD4 |
-|:---:|:--------:|:-------:|:----:|:----:|:----:|:---:|:---:|:----------:|:---------:|:----------:|:-------:|:---------:|:---:|:-----:|:---------:|:------:|:-------------:|:-------:|:-------:|:--------------:|:--------:|:--------:|
-|  1  |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-|  2  |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-|  3  |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-| ... |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-|  N  |          |         |      |      |      |     |     |            |           |            |         |           |     |       |           |        |               |         |         |                |          |          |
-
-Table: **Table 1** Analytical dataset structure after variable selection and cleaning.
+```{r analytical data}
+analytical_mockup %>%
+  pander(caption = "**Table 1** Analytical dataset structure after variable selection and cleaning.", split.table = Inf)
+```
 
 All variables in the analytical set were labeled according to the raw data provided and values were labeled according to the data dictionary for the preparation of production-quality results tables and figures.
 
@@ -130,7 +139,9 @@ This is a retrospective analysis of a prospective cohort study.
 
 1. Participants with at most 10 years of follow up;
 1. Participants included in the cohort between 2010-01-01 and 2018-12-31;
-1. Only the last valid observation of each individual will be included in the analysis.
+1. Only the last valid observation of each individual will be included in the analysis*.
+
+\* this criterion will be treated specially in this analysis (see section 5.1.4).
 
 **Exclusion criteria**
 
@@ -211,6 +222,9 @@ An LOCF-based imputation will be applied to impute future Zip codes based on the
 An additional dataset will be created by applying both NOCB- and LOCF-based imputations on missing values, with the intention of increasing the proportion of location data before the DCI data is merged and inclusion/exclusion criteria are applied, in particular the criterion that selects only the last valid observation of the individual in the study period.
 The non-imputed complete case dataset will be used as the control for the evaluation of the LOCF and the NOCB+LOCF datasets.
 
+In addition to the datasets created as described above, a separate set of tables will be created without the application of inclusion criterion #3 (section 4.2).
+Thus a new batch of datasets will be tested that include multiple observations per individual to assess model performance under time-varying SES values.
+
 ## Significance and Confidence Intervals
 
 All analyses will be performed using the significance level of 5%.
@@ -225,7 +239,7 @@ N/A
 
 ## Statistical packages
 
-This analysis will be performed using statistical software `R` version 4.3.0.
+This analysis will be performed using statistical software `R` version `r getRversion()`.
 
 # Observations and limitations
 
