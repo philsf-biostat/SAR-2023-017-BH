@@ -108,14 +108,9 @@ tab_desc %>%
 # knitr::include_graphics("../figures/outcome.png", error = FALSE)
 ```
 
-After dropping incomplete cases (data available to the model)
-
-- few individuals lost after complete-cases deletion
-<!-- ("lost" data frame) -->
-- Single: all Single datasets are equal
-- multiple:: most deaths are dropped in multiple CC (ZIP not recorded -> no SES)
-- multiple: LOCF is equal to LOCF+NOCB
-- single death added
+After dropping incomplete cases to inspect the data available to the model, we can anticipate how the model might be impacted by the imputations (Table 2).
+Surprisingly all three datasets under the "single observation per individual" approach are the same, and this was validated by the `all.equal()` function that performs a binary comparison between data frames.
+No changes to the data available for modelling can be detected using any of the imputation approaches for this dataset.
 
 ```{r}
 deaths %>%
@@ -124,6 +119,15 @@ deaths %>%
     caption = "**Table 2** Number of death events available to models in each dataset"
   )
 ```
+
+Under the "multiple observations per individual" approach, most outcome events are dropped for the complete case dataset.
+This happens because that dataset uses the exposure at discharge, but there are no Zip codes recorded for that measurement time.
+This way no DCI scores were available for most individuals, resulting in a sample of size 2 (Table 2).
+By applying the binary comparison between the two imputation approaches we found that both LOCF and LOCF+NOCB data frames are equal.
+A single outcome event was added to those datasets after the imputation is applied to the underlying SES data.
+
+This leaves only two datasets to perform the sensitivity analysis on: one dataset under the "single observations per individual" (regardless of whether an imputation was applied) and one using the "multiple observations per individual" approaches (using any imputation).
+For simplicity, we will consider the complete case dataset for the first case and the LOCF for the second one.
 
 ## Inferential analysis
 
