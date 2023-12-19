@@ -158,13 +158,14 @@ This is a retrospective analysis of a prospective cohort study.
 
 **Inclusion criteria**
 
-- Participants with at most 10 years of follow up;
-- Participants included in the cohort between 2010-01-01 and 2018-12-31.
+1. Participants with at most 10 years of follow up;
+1. Participants included in the cohort between 2010-01-01 and 2018-12-31;
+1. Only the last valid observation of each individual will be included in the analysis.
 
 **Exclusion criteria**
 
-Observations after 2019-12-31 will be excluded in order to mitigate risk of confounding by COVID-19 related deaths.
-Observations prior to this date will still be considered for participants where such data is available.
+1. Observations after 2019-12-31 will be excluded in order to mitigate risk of confounding by COVID-19 related deaths.
+1. Observations prior to this date will still be considered for participants where such data is available.
 
 ## Exposures
 

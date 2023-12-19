@@ -159,13 +159,16 @@ This is a retrospective analysis of a prospective cohort study.
 
 **Inclusion criteria**
 
-- Participants with at most 10 years of follow up;
-- Participants included in the cohort between 2010-01-01 and 2018-12-31.
+1. Participants with at most 10 years of follow up;
+1. Participants included in the cohort between 2010-01-01 and 2018-12-31;
+1. Only the last valid observation of each individual will be included in the analysis*.
+
+\* this criterion will be treated specially in this analysis (see section 5.1.4).
 
 **Exclusion criteria**
 
-Observations after 2019-12-31 will be excluded in order to mitigate risk of confounding by COVID-19 related deaths.
-Observations prior to this date will still be considered for participants where such data is available.
+1. Observations after 2019-12-31 will be excluded in order to mitigate risk of confounding by COVID-19 related deaths.
+1. Observations prior to this date will still be considered for participants where such data is available.
 
 ## Exposures
 
@@ -239,6 +242,9 @@ This model specification will be applied on all datasets created from the imputa
 A couple of simple imputation approaches will be applied on missing values for Zip codes, before the DCI data is merged into the TBI database.
 An LOCF-based imputation will be applied to impute future Zip codes based on the last known value for each individual.
 An additional dataset will be created by applying both NOCB- and LOCF-based imputations on missing values, with the intention of increasing the proportion of location data before the DCI data is merged and inclusion/exclusion criteria are applied, in particular the criterion that selects only the last valid observation of the individual in the study period.
+
+In addition to the datasets created as described above, a separate set of tables will be created without the application of inclusion criterion #3 (section 4.2).
+Thus a new batch of datasets will be tested that include multiple observations per individual to assess model performance under time-varying SES values.
 
 ## Significance and Confidence Intervals
 
