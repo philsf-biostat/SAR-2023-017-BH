@@ -88,8 +88,10 @@ This analysis was performed using statistical software `R` version `r getRversio
 
 ## Missing values in the original dataset
 
-- no changes to the id pool
-- slight shift in SES props, but similar overall (also, still homogeneously distributed)
+Table 1 shows how the number of outcome events increase when missing zip codes are imputed under the various imputation approaches employed.
+In all datasets the ID pool remains unchanged, meaning no participant that was dropped was recovered after the imputation approaches evaluated.
+Only a small number of new outcome events are gained when the multiple observations per individuals are considered.
+The distribution of frequencies of the SES categories vary slightly between approaches, but these proportions appear to be robust to changes in the underlying zip code imputations.
 
 ```{r tab_desc}
 tab_desc %>%
