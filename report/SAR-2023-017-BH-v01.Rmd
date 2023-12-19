@@ -62,6 +62,10 @@ source("scripts/results.R", encoding = 'UTF-8')
 
 ## Objectives
 
+1. To describe the missingness in zip codes at each follow up collection;
+1. To impute missing Zip codes with data available in previous follow up collections.
+1. To assess the sensitivity of the association between mortality and socioeconomic status to the imputation of participant missing location.
+
 <!-- ## Data reception and cleaning -->
 
 # Methods
@@ -161,6 +165,12 @@ sch.df %>%
 # Observations and Limitations
 
 # Conclusions
+
+Simple imputation on zip codes do not extend the range of observations available for modeling in this dataset when using a single observation per individual.
+
+When using multiple observations per individual, there is a minute increment in the number of events, but there is different imputation approaches do not yield different datasets.
+
+When using multiple observations per individual in the model specification evaluated, the time-varying exposure allows for the inclusion of terms that violated the proportional hazards assumption in the constant exposure.
 
 # References
 
