@@ -135,7 +135,7 @@ deaths %>%
 ```
 
 Under the "multiple observations per individual" approach, most outcome events are dropped for the complete case dataset.
-This happens because that dataset uses the exposure at discharge, but there are no Zip codes recorded for that measurement time.
+This happens because that dataset uses the exposure at all follow-up times, but most individuals that have expired did not have Zip codes recorded for that follow-up session.
 This way no DCI scores were available for most individuals, resulting in a sample of size 2 (Table 2).
 By applying the binary comparison between the two imputation approaches we found that both LOCF and LOCF+NOCB data frames are equal.
 A single outcome event was added to those datasets after the imputation is applied to the underlying SES data.
